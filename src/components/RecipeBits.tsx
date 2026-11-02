@@ -10,7 +10,7 @@ import { cx, Tag } from './ui';
 export function RecipeImage({ id, title, src, className, large }: { id: string; title: string; src: string | null; className?: string; large?: boolean }) {
   const [failed, setFailed] = useState(false);
   if (src && !failed) {
-    return <img src={src} alt="" loading="lazy" decoding="async" draggable={false} className={cx('object-cover', className)} onError={() => setFailed(true)} />;
+    return <img src={src} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" draggable={false} className={cx('object-cover', className)} onError={() => setFailed(true)} />;
   }
   const v = hash01(id, 3);
   return (

@@ -54,6 +54,14 @@ const toCm = (inch: number) => Math.round(inch * 2.54);
 /** Convert any imperial amounts, temperatures and sizes in a piece of recipe text. */
 export function metricise(text: string): string {
   let s = expandVulgar(text);
+  // Many sites give both: "180g (6 oz)" or "6 oz / 180g". Keep the metric one rather than doubling up.
+  if (/\d\s*(?:g|kg|ml|l)\b/i.test(s)) {
+    const imperial = String.raw`${RANGE}\s*${UNIT_RE}(?![a-z])\.?`;
+    s = s
+      .replace(new RegExp(String.raw`\s*\(\s*${imperial}\s*\)`, 'gi'), '')
+      .replace(new RegExp(String.raw`${imperial}\s*\/\s*(?=\d)`, 'gi'), '')
+      .replace(new RegExp(String.raw`\s*\/\s*${imperial}`, 'gi'), '');
+  }
   // Oven temperatures: 350°F, 350 degrees F, 350F. Three digits only, so "2 F" can't be misread.
   s = s.replace(/(\d{3})\s*(?:°|º|degrees?)?\s*F(?:ahrenheit)?\b/g, (_, f: string) => `${toC(+f)}°C`);
   // Pan sizes: 9x13-inch, 9 x 13 inches, 8" square.

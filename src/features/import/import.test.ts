@@ -21,6 +21,12 @@ describe('metricise', () => {
     expect(metricise('2 tbsp olive oil')).toBe('2 tbsp olive oil');
     expect(metricise('1 cupcake tin')).toBe('1 cupcake tin');
   });
+  it('keeps the metric amount when a line already gives both', () => {
+    expect(metricise('180g (6 oz) chicken breast')).toBe('180g chicken breast');
+    expect(metricise('6 oz / 180g chicken breast')).toBe('180g chicken breast');
+    expect(metricise('1 cup / 250ml stock')).toBe('250ml stock');
+    expect(metricise('500g / 1 lb mince')).toBe('500g mince');
+  });
   it('turns cups of a known dry ingredient into grams', () => {
     expect(metricise('1 cup plain flour')).toMatch(/^\d+ g plain flour$/);
   });
