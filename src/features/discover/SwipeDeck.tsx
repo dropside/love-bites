@@ -102,8 +102,8 @@ export function SwipeDeck({ cards, onSwipe, onUndo, canUndo }: { cards: DeckCard
             style={{ x, y, rotate, touchAction: 'pan-y' }}
             onDragStart={() => { dragged.current = true; }}
             onDragEnd={(_, info) => {
-              if (info.offset.x > THRESHOLD || info.velocity.x > VELOCITY) fly('love');
-              else if (info.offset.x < -THRESHOLD || info.velocity.x < -VELOCITY) fly('pass');
+              if (info.offset.x > THRESHOLD || (info.offset.x > 30 && info.velocity.x > VELOCITY)) fly('love');
+              else if (info.offset.x < -THRESHOLD || (info.offset.x < -30 && info.velocity.x < -VELOCITY)) fly('pass');
               setTimeout(() => { dragged.current = false; }, 50);
             }}
             onClick={() => { if (!dragged.current) navigate(`/recipe/${top.recipe.id}`); }}
