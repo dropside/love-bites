@@ -8,6 +8,9 @@ import { CookbookScreen } from './features/cookbook/CookbookScreen';
 import { DiscoverScreen } from './features/discover/DiscoverScreen';
 import { GateScreen } from './features/gate/GateScreen';
 import { isUnlocked } from './features/gate/gate';
+import { SignInScreen } from './features/gate/SignInScreen';
+import { cloudEnabled, currentMember } from './cloud/client';
+import { startSync } from './cloud/sync';
 import { PantryScreen } from './features/pantry/PantryScreen';
 import { PlanScreen } from './features/plan/PlanScreen';
 import { RecipeScreen } from './features/recipe/RecipeScreen';
@@ -44,15 +47,19 @@ function UpdateBanner() {
 
 const fallback = <div className="p-4"><Skeleton className="h-96" /></div>;
 
+// With the family backend on, people sign in with their own email; without it, the old kitchen code applies.
+const signedIn = () => (cloudEnabled() ? currentMember() !== null : isUnlocked());
+
 export default function App() {
-  const [unlocked, setUnlocked] = useState(isUnlocked);
+  const [unlocked, setUnlocked] = useState(signedIn);
   const splash = useSplash();
+  useEffect(() => (unlocked && cloudEnabled() ? startSync() : undefined), [unlocked]);
   return (
     <FeedbackProvider>
       {splash.show && <Splash onDone={splash.done} />}
       <UpdateBanner />
       {!unlocked ? (
-        <GateScreen onUnlock={() => setUnlocked(true)} />
+        cloudEnabled() ? <SignInScreen onSignedIn={() => setUnlocked(true)} /> : <GateScreen onUnlock={() => setUnlocked(true)} />
       ) : (
         <HashRouter>
           <ScrollTop />

@@ -13,6 +13,8 @@ import { db, saveHousehold } from '../../state/db';
 import { useHousehold } from '../../state/hooks';
 import { lockApp } from '../gate/gate';
 import { useManifest } from '../shop/useManifest';
+import { cloudEnabled } from '../../cloud/client';
+import { AccountSection } from '../family/AccountSection';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -94,6 +96,7 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="display text-[2rem]">Settings</h1>
+      {cloudEnabled() && <AccountSection onSignedOut={onLock} />}
 
       <Section title="Household">
         <div className="flex items-center justify-between"><span className="text-sm font-bold">Default servings</span><Stepper label="default servings" value={h.defaultServings} onChange={(defaultServings) => void saveHousehold({ defaultServings })} /></div>
@@ -151,7 +154,7 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
       </Section>
 
       <Section title="Backup">
-        <p className="text-sm text-muted">Everything personal lives in this browser on this device. It doesn't sync between phones and computers, so back up now and then, or to move to a new phone.</p>
+        <p className="text-sm text-muted">{cloudEnabled() ? 'Your account backs up automatically. A backup file is an extra copy you keep yourself.' : "Everything personal lives in this browser on this device. It doesn't sync between phones and computers, so back up now and then, or to move to a new phone."}</p>
         <div className="flex flex-wrap gap-2">
           <Button icon={Download} data-testid="export-backup" onClick={() => void download()}>Export backup</Button>
           <input ref={backupInput} type="file" accept=".json,application/json" aria-label="Restore backup file" className="hidden" data-testid="restore-input" onChange={(e) => void onBackupFile(e.target.files?.[0])} />
@@ -164,7 +167,7 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
         <div className="flex flex-wrap gap-2">
           <Button variant="ghost" data-testid="reset-discovery" onClick={() => void confirm({ title: 'Reset discovery history?', body: 'Passed recipes come back into the feed and learned tastes reset. Your cookbook stays.', danger: true, confirmLabel: 'Reset' }).then(async (ok) => { if (ok) { await db.swipes.clear(); await db.settings.delete('lastSwipe'); toast('Fresh start.'); } })}>Reset discovery</Button>
           <Button variant="ghost" onClick={() => void confirm({ title: 'Clear finished shops?', body: "Past shopping history goes. Your active list stays.", danger: true, confirmLabel: 'Clear' }).then(async (ok) => { if (ok) { const ids = (await db.sessions.where('status').equals('complete').toArray()).map((s) => s.id); await db.sessions.bulkDelete(ids); for (const id of ids) { await db.shopLines.where('sessionId').equals(id).delete(); await db.manualItems.where('sessionId').equals(id).delete(); await db.shopExtras.where('sessionId').equals(id).delete(); } toast('Cleared.'); } })}>Clear finished shops</Button>
-          <Button variant="ink" icon={Lock} data-testid="lock-app" onClick={() => { lockApp(); onLock(); }}>Lock app</Button>
+          {!cloudEnabled() && <Button variant="ink" icon={Lock} data-testid="lock-app" onClick={() => { lockApp(); onLock(); }}>Lock app</Button>}
         </div>
       </Section>
 

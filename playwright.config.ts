@@ -24,6 +24,7 @@ export default defineConfig({
     url: 'http://localhost:4173/love-bites/',
     reuseExistingServer: true,
     timeout: 180_000,
-    env: { VITE_KITCHEN_CODE_HASH: TEST_HASH },
+    // The family backend is off in tests unless a test points the app at its mock with window.__LB_SUPABASE__.
+    env: { VITE_KITCHEN_CODE_HASH: TEST_HASH, VITE_CLOUD: 'off' },
   },
 });

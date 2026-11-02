@@ -6,9 +6,11 @@ import { RecipeRow } from '../../components/RecipeBits';
 import { Button, Chip, Empty, IconButton, inputClass, selectClass, Sheet, Skeleton, Tag, useFeedback } from '../../components/ui';
 import { db, patchCookbook, uid, type CollectionRow, type CookbookRow } from '../../state/db';
 import { useCatalogIndex } from '../../state/hooks';
+import { cloudEnabled } from '../../cloud/client';
+import { FamilyShelf } from '../family/FamilyBits';
 
 const STARTERS = ['Quick dinners', 'Comfort food', "Kids' favourites", 'Budget meals', 'Baking', 'Weekend cooking', 'Thermomix favourites'];
-type Shelf = 'all' | 'fav' | 'try' | 'recent' | 'family' | 'archived';
+type Shelf = 'all' | 'shared' | 'fav' | 'try' | 'recent' | 'family' | 'archived';
 type Sort = 'added' | 'az' | 'rating' | 'time' | 'cost';
 
 function CollectionsSheet({ open, onClose, collections }: { open: boolean; onClose: () => void; collections: CollectionRow[] }) {
@@ -101,7 +103,7 @@ export function CookbookScreen() {
   }, [rows, byId, shelf, q, sort, tag, stars, notes]);
 
   const shelves: { id: Shelf; label: string }[] = [
-    { id: 'all', label: 'All' }, { id: 'fav', label: 'Favourites' }, { id: 'try', label: 'Want to try' }, { id: 'recent', label: 'Recently cooked' }, { id: 'family', label: 'Family faves' }, { id: 'archived', label: 'Archive' },
+    { id: 'all', label: 'All' }, ...(cloudEnabled() ? [{ id: 'shared' as const, label: 'From family' }] : []), { id: 'fav', label: 'Favourites' }, { id: 'try', label: 'Want to try' }, { id: 'recent', label: 'Recently cooked' }, { id: 'family', label: 'Family faves' }, { id: 'archived', label: 'Archive' },
   ];
 
   return (
@@ -126,7 +128,8 @@ export function CookbookScreen() {
       </div>
 
       {(!index || !rows) && <Skeleton className="h-64" />}
-      {index && rows && !list.length && (
+      {shelf === 'shared' && index && <FamilyShelf byId={byId} />}
+      {shelf !== 'shared' && index && rows && !list.length && (
         <Empty title={rows.length ? 'Nothing on this shelf.' : 'Still blank. Very punk.'} action={<Link to="/"><Button icon={Heart}>Go find some food</Button></Link>}>
           Swipe right on recipes you love and they'll live here.
         </Empty>

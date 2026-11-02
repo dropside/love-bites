@@ -11,6 +11,7 @@ import type { Product, Recipe, RecipeIngredient } from '../../domain/types';
 import { formatQuantity, fraction } from '../../domain/units';
 import { activeSession, db, patchCookbook, uid } from '../../state/db';
 import { useBasket, useHousehold, useRecipe } from '../../state/hooks';
+import { LovedBy, ShareWithFamilyButton } from '../family/FamilyBits';
 import { AddToPlanSheet } from '../plan/AddToPlanSheet';
 import { ProductPicker, productSize } from '../shop/ProductPicker';
 
@@ -172,6 +173,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
         <div className="mb-2 flex flex-wrap gap-1.5">
           <CompletenessTag r={recipe} />
           <ThermomixTag r={recipe} />
+          <LovedBy recipeId={recipe.id} />
           {recipe.cuisine && <Tag>{recipe.cuisine}</Tag>}
           {recipe.tags.includes('kid-friendly') && <Tag tone="lime"><Baby size={12} aria-hidden /> Kid-friendly</Tag>}
           {recipe.dietary.map((d) => <Tag key={d}>{d}</Tag>)}
@@ -199,6 +201,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
           {reliable && <Button icon={ShoppingBasket} variant="lime" data-testid="add-to-list" onClick={() => void addToList()}>Add to list</Button>}
           <Button variant="white" icon={book?.saved ? Archive : Heart} data-testid="save-recipe" onClick={() => void (book?.saved ? confirm({ title: 'Archive this recipe?', body: "It leaves your cookbook but stays in the archive.", confirmLabel: 'Archive' }).then((ok) => { if (ok) void patchCookbook(recipe.id, { archived: true, saved: false }); }) : patchCookbook(recipe.id, { saved: true, archived: false }))}>{book?.saved ? 'Archive' : 'Save recipe'}</Button>
           <Button variant="white" icon={Share2} onClick={() => void share()}>Share link</Button>
+          <ShareWithFamilyButton recipe={recipe} />
           {reliable && <Button variant="white" icon={Pencil} onClick={() => void editCopy()}>{recipe.userOwned ? 'Edit recipe' : 'Edit my copy'}</Button>}
           {reliable && <Button variant="white" icon={Star} onClick={() => setRateOpen(true)}>Rate / note</Button>}
         </div>
