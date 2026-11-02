@@ -1,4 +1,4 @@
-import { Mail } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, type FormEvent } from 'react';
 import { Logo } from '../../components/brand';
@@ -8,37 +8,25 @@ import { myDisplayName, saveDisplayName } from '../../cloud/family';
 
 const field = 'h-14 w-full rounded-full border-2 border-ink bg-white px-5 text-base outline-none focus:ring-2 focus:ring-pop';
 
-/** Invite-only sign in: an emailed 6-digit code, so it works inside the home-screen app with no links to juggle. */
+/** Invite-only sign in. Louie adds each person in Supabase; there's no way to sign up from the app. */
 export function SignInScreen({ onSignedIn }: { onSignedIn: () => void }) {
-  const [step, setStep] = useState<'email' | 'code' | 'name'>('email');
+  const [step, setStep] = useState<'signin' | 'name'>('signin');
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false);
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const c = cloud()!;
 
-  const sendCode = async (e: FormEvent) => {
+  const signIn = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError('');
-    const { error: err } = await c.auth.signInWithOtp({ email: email.trim().toLowerCase(), options: { shouldCreateUser: false } });
-    setBusy(false);
-    if (err) {
-      setError(/signups not allowed|not found|otp_disabled/i.test(err.message) || err.status === 422 ? "That email isn't on the family list. Ask Louie to add you." : /rate|seconds/i.test(err.message) ? 'Too many codes asked for. Give it a minute and try again.' : "Couldn't send a code. Check you're online and try again.");
-      return;
-    }
-    setStep('code');
-  };
-
-  const verify = async (e: FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    setError('');
-    const { data, error: err } = await c.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.replace(/\s/g, ''), type: 'email' });
+    const { data, error: err } = await c.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     if (err || !data.user) {
       setBusy(false);
-      setError("That code didn't work. Check the latest email, or send a new one.");
+      setError(err && /fetch|network/i.test(err.message) ? "Can't reach the kitchen. Check you're online and try again." : "That email and password don't match. Ask Louie if you're stuck.");
       return;
     }
     rememberMember({ id: data.user.id, email: data.user.email ?? email });
@@ -62,22 +50,19 @@ export function SignInScreen({ onSignedIn }: { onSignedIn: () => void }) {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
         <Logo variant="full" eager className="mx-auto mb-4 block w-full text-center text-5xl" />
         <div className="rounded-[2rem] bg-white p-6 shadow-[var(--shadow-pop)]">
-          {step === 'email' && (
-            <form onSubmit={(e) => void sendCode(e)}>
+          {step === 'signin' && (
+            <form onSubmit={(e) => void signIn(e)}>
               <h1 className="display text-3xl leading-tight">Hey, gorgeous.<br />What's cooking?</h1>
-              <label htmlFor="email" className="mb-1.5 mt-5 block text-sm font-bold">Your email</label>
-              <input id="email" type="email" inputMode="email" autoComplete="email" autoFocus required value={email} onChange={(e) => { setEmail(e.target.value); setError(''); }} className={field} />
-              <Button type="submit" size="lg" icon={Mail} className="mt-4 w-full" disabled={busy || !email.includes('@')}>{busy ? 'Sending…' : 'Email me a code'}</Button>
-            </form>
-          )}
-          {step === 'code' && (
-            <form onSubmit={(e) => void verify(e)}>
-              <h1 className="display text-3xl leading-tight">Check your email</h1>
-              <p className="mt-2 text-sm">We sent a code to <b>{email}</b>. It can take a minute, and might be in spam.</p>
-              <label htmlFor="code" className="mb-1.5 mt-4 block text-sm font-bold">Code</label>
-              <input id="code" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={10} value={code} onChange={(e) => { setCode(e.target.value); setError(''); }} className={`${field} text-center text-2xl tracking-[0.3em]`} />
-              <Button type="submit" size="lg" className="mt-4 w-full" disabled={busy || code.replace(/\D/g, '').length < 6}>{busy ? 'Checking…' : 'Let me in'}</Button>
-              <button type="button" className="mt-3 w-full text-sm font-bold underline" onClick={() => { setStep('email'); setCode(''); setError(''); }}>Use a different email or resend</button>
+              <label htmlFor="email" className="mb-1.5 mt-5 block text-sm font-bold">Email</label>
+              <input id="email" type="email" inputMode="email" autoComplete="username" autoFocus required value={email} onChange={(e) => { setEmail(e.target.value); setError(''); }} className={field} />
+              <label htmlFor="password" className="mb-1.5 mt-3 block text-sm font-bold">Password</label>
+              <div className="relative">
+                <input id="password" type={show ? 'text' : 'password'} autoComplete="current-password" required value={password} onChange={(e) => { setPassword(e.target.value); setError(''); }} className={`${field} pr-14`} />
+                <button type="button" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'} className="absolute right-1.5 top-1.5 flex h-11 w-11 items-center justify-center rounded-full">
+                  {show ? <EyeOff size={20} aria-hidden /> : <Eye size={20} aria-hidden />}
+                </button>
+              </div>
+              <Button type="submit" size="lg" className="mt-4 w-full" disabled={busy || !email.includes('@') || !password}>{busy ? 'Checking…' : 'Let me in'}</Button>
             </form>
           )}
           {step === 'name' && (

@@ -27,13 +27,9 @@ async function handle(route: Route) {
   const url = new URL(req.url());
   const json = (status: number, body: unknown) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body), headers: { 'access-control-allow-origin': '*' } });
   if (req.method() === 'OPTIONS') return route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' } });
-  if (url.pathname === '/auth/v1/otp') {
-    const { email } = req.postDataJSON() as { email: string };
-    return FAMILY[email] ? json(200, {}) : json(422, { code: 'otp_disabled', msg: 'Signups not allowed for otp' });
-  }
-  if (url.pathname === '/auth/v1/verify') {
-    const { email, token } = req.postDataJSON() as { email: string; token: string };
-    if (token !== '123456' || !FAMILY[email]) return json(403, { code: 'otp_expired', msg: 'Token has expired or is invalid' });
+  if (url.pathname === '/auth/v1/token' && url.searchParams.get('grant_type') === 'password') {
+    const { email, password } = req.postDataJSON() as { email: string; password: string };
+    if (password !== 'tasty-secret' || !FAMILY[email]) return json(400, { code: 'invalid_credentials', msg: 'Invalid login credentials' });
     const id = FAMILY[email];
     return json(200, { access_token: jwt(id), token_type: 'bearer', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, refresh_token: `r-${id}`, user: { id, email, aud: 'authenticated', role: 'authenticated', app_metadata: {}, user_metadata: {}, created_at: new Date().toISOString() } });
   }
@@ -75,9 +71,8 @@ async function phone(context: BrowserContext): Promise<Page> {
 }
 
 async function signIn(page: Page, email: string, name?: string) {
-  await page.getByLabel('Your email').fill(email);
-  await page.getByRole('button', { name: 'Email me a code' }).click();
-  await page.getByLabel('Code').fill('123456');
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password', { exact: true }).fill('tasty-secret');
   await page.getByRole('button', { name: 'Let me in' }).click();
   if (name) {
     await page.getByLabel('Your name').fill(name);
@@ -86,13 +81,13 @@ async function signIn(page: Page, email: string, name?: string) {
   await expect(page.getByTestId('swipe-card')).toBeVisible();
 }
 
-test('family: invite-only sign in, private sync across phones, shared recipes and loves', async ({ browser }) => {
+test('family: invite-only password sign in, private sync across phones, shared recipes and loves', async ({ browser }) => {
   const ren = await phone(await browser.newContext());
   // Someone not on the list is turned away.
-  await ren.getByLabel('Your email').fill('stranger@example.com');
-  await ren.getByRole('button', { name: 'Email me a code' }).click();
-  await expect(ren.getByRole('alert')).toContainText("isn't on the family list");
-  await ren.getByLabel('Your email').fill('');
+  await ren.getByLabel('Email').fill('stranger@example.com');
+  await ren.getByLabel('Password', { exact: true }).fill('tasty-secret');
+  await ren.getByRole('button', { name: 'Let me in' }).click();
+  await expect(ren.getByRole('alert')).toContainText("don't match");
   await signIn(ren, 'ren@example.com', 'Ren');
 
   const loved = (await ren.getByTestId('swipe-card').getByTestId('card-title').textContent())!.trim();
@@ -137,5 +132,5 @@ test('family: invite-only sign in, private sync across phones, shared recipes an
   await renPhone2.goto('./#/settings');
   await renPhone2.getByTestId('sign-out').click();
   await renPhone2.getByTestId('confirm-yes').click();
-  await expect(renPhone2.getByLabel('Your email')).toBeVisible();
+  await expect(renPhone2.getByLabel('Email')).toBeVisible();
 });

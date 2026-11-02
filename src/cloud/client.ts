@@ -4,8 +4,8 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 export const CLOUD = {
-  url: '',
-  key: '',
+  url: 'https://xmxqrasmtremdrdooyav.supabase.co',
+  key: 'sb_publishable_RkQNAX5UUtRb0ij6OAmeVA_Rb9vx7y2',
 };
 
 declare global {

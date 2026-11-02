@@ -37,6 +37,16 @@ npm run dev
 
 Every push to `main` runs `.github/workflows/deploy.yml`: type-check, lint, unit tests, catalogue audit, browser tests, build, deploy. It also runs weekly to refresh prices. If the price feed fails, the last good data stays, labelled with its real date.
 
+## Family accounts (Supabase)
+
+Sign-in, backup and family sharing use a free Supabase project (`love-bites`, organisation *Love Bites*). The project URL and publishable key are in `src/cloud/client.ts`. They're public by design: access is enforced by the row-level security policies in `supabase/schema.sql`. Each person's own data is private to them, while names, shared recipes and loves are visible to the whole family.
+
+Sign-ups are switched off, so only people you add can get in. **To add someone:** Supabase dashboard > Authentication > Users > Add user > Create new user. Enter their email and a starting password, and leave *Auto confirm user* ticked. Send them the password privately. They can change it in Settings > Your account. To reset a forgotten password, use the same Users page.
+
+Each person's data is merged in when they sign in on a new phone, and backed up every 30 seconds while the app is open. If the same item is changed on two phones, both versions are kept rather than one overwriting the other. Free Supabase projects pause after a week with no activity. If that happens, restore the project from the dashboard; nothing is lost.
+
+Tests run with the cloud switched off (`VITE_CLOUD=off`), except `e2e/family.spec.ts`, which runs against a mock backend. Without the cloud, the app falls back to the kitchen code below.
+
 ## Changing the kitchen code
 
 The gate is a **convenience, not security**. GitHub Pages is public, so anyone could read the bundled data and could brute-force a weak code from the hash in the bundle. Don't put anything sensitive in deployed assets.
