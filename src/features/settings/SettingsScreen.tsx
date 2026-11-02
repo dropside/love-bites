@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Download, Lock, Upload } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { Logo } from '../../components/brand';
 import { Button, Card, Chip, Field, inputClass, selectClass, Sheet, Stepper, Tag, useFeedback } from '../../components/ui';
 import { loadReport } from '../../data/catalog';
@@ -8,11 +9,10 @@ import { CANONICAL_INGREDIENTS } from '../../domain/canonicalData';
 import { formatMoney, priceStatus, PRICE_STATUS_LABEL } from '../../domain/pricing';
 import type { Allergen } from '../../domain/types';
 import { exportBackup, restoreBackup, validateBackup, type BackupSummary } from '../../state/backup';
-import { db, patchCookbook, saveHousehold } from '../../state/db';
+import { db, saveHousehold } from '../../state/db';
 import { useHousehold } from '../../state/hooks';
 import { lockApp } from '../gate/gate';
 import { useManifest } from '../shop/useManifest';
-import { parseImportText, toRecipe } from './importRecipes';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -60,7 +60,6 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
   const [report, setReport] = useState<Record<string, unknown> | null>(null);
   const [restore, setRestore] = useState<BackupSummary | null>(null);
   const backupInput = useRef<HTMLInputElement>(null);
-  const recipeInput = useRef<HTMLInputElement>(null);
   const swipeCount = useLiveQuery(() => db.swipes.count(), []);
   const doneShops = useLiveQuery(() => db.sessions.where('status').equals('complete').count(), []);
   const userRecipes = useLiveQuery(() => db.userRecipes.count(), []);
@@ -90,17 +89,6 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
     if (!res.ok) toast(res.error);
     else setRestore(res);
     if (backupInput.current) backupInput.current.value = '';
-  };
-  const onRecipeFile = async (file: File | undefined) => {
-    if (!file) return;
-    const { recipes, errors } = parseImportText(await file.text(), file.name);
-    for (const x of recipes) {
-      const row = toRecipe(x);
-      await db.userRecipes.put(row);
-      await patchCookbook(row.id, { saved: true });
-    }
-    toast(`Imported ${recipes.length} recipe${recipes.length === 1 ? '' : 's'}${errors.length ? `, ${errors.length} skipped` : ''}.`);
-    if (recipeInput.current) recipeInput.current.value = '';
   };
 
   return (
@@ -159,9 +147,7 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
             ].map(([k, v]) => <div key={k} className="rounded-2xl bg-pale p-3"><dt className="text-xs font-bold text-muted">{k}</dt><dd className="display text-xl">{v}</dd></div>)}
           </dl>
         )}
-        <p className="text-sm text-muted">You've added {userRecipes ?? 0} of your own. Import recipes you own as JSON, schema.org JSON, or CSV (title, servings, minutes, ingredients, steps, source_url). They stay on this device.</p>
-        <input ref={recipeInput} type="file" accept=".json,.csv,application/json,text/csv" aria-label="Import recipes file" className="hidden" data-testid="recipe-import" onChange={(e) => void onRecipeFile(e.target.files?.[0])} />
-        <Button variant="white" icon={Upload} onClick={() => recipeInput.current?.click()}>Import recipes</Button>
+        <p className="text-sm text-muted">You've added {userRecipes ?? 0} of your own. Add more from a link, pasted text or a file in the <Link to="/import" className="font-bold underline">Import tab</Link>.</p>
       </Section>
 
       <Section title="Backup">

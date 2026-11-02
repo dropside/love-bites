@@ -17,6 +17,7 @@ const CookScreen = lazy(() => import('./features/cook/CookScreen'));
 const ShopModeScreen = lazy(() => import('./features/shop/ShopModeScreen'));
 const SettingsScreen = lazy(() => import('./features/settings/SettingsScreen'));
 const RecipeEditor = lazy(() => import('./features/recipe/RecipeEditor'));
+const ImportScreen = lazy(() => import('./features/import/ImportScreen'));
 
 function ScrollTop() {
   const { pathname } = useLocation();
@@ -63,6 +64,7 @@ export default function App() {
                 <Route path="plan" element={<PlanScreen />} />
                 <Route path="shop" element={<ShopScreen />} />
                 <Route path="pantry" element={<PantryScreen />} />
+                <Route path="import" element={<ImportScreen />} />
                 <Route path="settings" element={<SettingsScreen onLock={() => setUnlocked(false)} />} />
                 <Route path="recipe/:id" element={<RecipeScreen />} />
                 <Route path="recipe/:id/edit" element={<RecipeEditor />} />

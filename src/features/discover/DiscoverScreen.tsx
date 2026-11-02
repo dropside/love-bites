@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Layers, LayoutList, Search, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Empty, ErrorState, IconButton, inputClass, Skeleton, Tag, useFeedback } from '../../components/ui';
+import { Button, Empty, ErrorState, IconButton, inputClass, selectClass, Skeleton, Tag, useFeedback } from '../../components/ui';
 import { loadMatchIds } from '../../data/catalog';
 import { activeFilterCount, applyFilters, applySort, availabilityScore, emptyFilters, profileFrom, rankDeck, type DiscoverFilters } from '../../domain/ranking';
 import type { RecipeSummary } from '../../domain/types';
@@ -100,6 +100,12 @@ export function DiscoverScreen() {
     if (++swipedCount.current % 12 === 0) setEpoch((e) => e + 1);
   };
 
+  const mealTypes = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of index ?? []) for (const t of r.mealTypes) m.set(t, (m.get(t) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
+  }, [index]);
+
   const hasFilters = activeFilterCount(filters) > 0;
   const hour = new Date().getHours();
   const hello = hour < 11 ? 'Morning, gorgeous.' : hour < 17 ? 'Hey, gorgeous.' : 'Evening, gorgeous.';
@@ -115,6 +121,15 @@ export function DiscoverScreen() {
         </div>
       </section>
 
+      {view === 'list' && (
+        <label className="mb-2 flex items-center gap-2 text-sm font-bold">
+          Meal type
+          <select aria-label="Meal type" data-testid="list-meal-type" className={`${selectClass} h-11 flex-1 rounded-full capitalize`} value={filters.mealType ?? ''} onChange={(e) => setFilters({ ...filters, mealType: e.target.value || null })}>
+            <option value="">All meals</option>
+            {mealTypes.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </label>
+      )}
       <div className="mb-3 flex gap-2">
         <div className="relative flex-1">
           <Search size={18} aria-hidden className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />

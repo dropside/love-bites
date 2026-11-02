@@ -1,4 +1,4 @@
-import { BookHeart, CalendarDays, Flame, Settings, ShoppingBasket, Warehouse, WifiOff } from 'lucide-react';
+import { BookHeart, CalendarDays, Flame, Import, Settings, ShoppingBasket, Warehouse, WifiOff } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useOnline } from '../state/hooks';
 import { Logo } from './brand';
@@ -10,6 +10,7 @@ const TABS = [
   { to: '/plan', label: 'Plan', icon: CalendarDays },
   { to: '/shop', label: 'Shop', icon: ShoppingBasket },
   { to: '/pantry', label: 'Pantry', icon: Warehouse },
+  { to: '/import', label: 'Import', icon: Import },
 ];
 
 export function AppHeader() {
@@ -29,11 +30,11 @@ export function AppHeader() {
 
 export function BottomNav() {
   return (
-    <nav aria-label="Main" className="safe-b fixed inset-x-0 bottom-0 z-40 px-3 pt-2 md:bottom-3 md:px-0">
-      <ul className="mx-auto flex max-w-md items-stretch justify-between rounded-full bg-ink p-1.5 shadow-[var(--shadow-pop)]">
+    <nav aria-label="Main" className="safe-b fixed inset-x-0 bottom-0 z-40 bg-ink px-1.5 pt-1.5">
+      <ul className="mx-auto flex max-w-xl items-stretch justify-between gap-0.5">
         {TABS.map(({ to, label, icon: Icon, end }) => (
           <li key={to} className="flex-1">
-            <NavLink to={to} end={end} className={({ isActive }) => cx('flex h-12 flex-col items-center justify-center rounded-full text-[11px] font-bold transition', isActive ? 'bg-pop text-ink' : 'text-white')}>
+            <NavLink to={to} end={end} className={({ isActive }) => cx('flex h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-bold transition', isActive ? 'bg-pop text-ink' : 'text-white')}>
               <Icon size={19} aria-hidden />
               {label}
             </NavLink>
@@ -48,7 +49,7 @@ export function AppLayout() {
   return (
     <div className="min-h-dvh">
       <AppHeader />
-      <main className="mx-auto max-w-5xl px-4 pb-32 pt-1"><Outlet /></main>
+      <main className="mx-auto max-w-5xl px-4 pb-28 pt-1"><Outlet /></main>
       <BottomNav />
     </div>
   );

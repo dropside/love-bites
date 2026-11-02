@@ -88,7 +88,7 @@ export function ShopScreen() {
   const s = useShopping();
   const household = useHousehold();
   const navigate = useNavigate();
-  const { toast, confirm } = useFeedback();
+  const { toast } = useFeedback();
   const manifest = useManifest();
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [pickerKey, setPickerKey] = useState<string | null>(null);
@@ -113,10 +113,10 @@ export function ShopScreen() {
 
   const finish = async () => {
     if (!s.session || !s.rows || !totals) return;
-    const add = await confirm({ title: 'Shop done!', body: 'Add what you ticked to your pantry? It means next time the list knows what you have. You can edit it after.', confirmLabel: 'Add to pantry' });
-    await completeShop(s.session.id, s.rows, totals.total, add);
+    // Everything ticked goes straight into the pantry, so the next list knows what's at home.
+    const added = await completeShop(s.session.id, s.rows, totals.total, true);
     await activeSession();
-    toast('Shop complete. Go you.');
+    toast(added ? `Shop complete. ${added} item${added === 1 ? '' : 's'} added to your pantry.` : 'Shop complete. Go you.');
     navigate('/pantry');
   };
 

@@ -150,7 +150,8 @@ export function packLabel(p: Product | null, count: number, weightGrams: number 
 }
 
 /** Complete the shop. Optionally moves what was bought into the pantry, kept separate from consumption. */
-export async function completeShop(sessionId: string, rows: ShopRow[], totalCents: number, addToPantry: boolean) {
+export async function completeShop(sessionId: string, rows: ShopRow[], totalCents: number, addToPantry: boolean): Promise<number> {
+  let added = 0;
   await db.transaction('rw', db.sessions, db.pantry, db.pantryLog, async () => {
     if (addToPantry) {
       for (const r of rows) {
@@ -171,8 +172,10 @@ export async function completeShop(sessionId: string, rows: ShopRow[], totalCent
           await db.pantry.put({ id: pantryId, canonicalId: r.line.canonicalId, name: c?.name ?? r.line.name, quantity: qty, dim, staple: false, expiry: null, location: c?.category === 'meat' || c?.category === 'dairy' ? 'fridge' : c?.category === 'frozen' ? 'freezer' : 'pantry', lowAt: null, addedAt: Date.now() });
         } else continue;
         await db.pantryLog.put({ id: uid(), pantryId, name: c?.name ?? r.line.name, delta: qty, dim, reason: 'Bought at Woolworths', at: Date.now(), undone: false });
+        added++;
       }
     }
     await db.sessions.update(sessionId, { status: 'complete', completedAt: Date.now(), totalCents });
   });
+  return added;
 }
