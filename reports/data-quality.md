@@ -1,6 +1,6 @@
 # Love Bites data quality report
 
-Generated 2026-11-02T04:49:44.244Z. Every number below is counted from the catalogue files; nothing is estimated.
+Generated 2026-11-02T05:49:27.704Z. Every number below is counted from the catalogue files; nothing is estimated.
 
 ## Recipes
 - Total distinct: **2301** (from 2389 candidates, 88 duplicates removed)
@@ -9,7 +9,7 @@ Generated 2026-11-02T04:49:44.244Z. Every number below is counted from the catal
 - By rights: {"full-text":1633,"link-only":668}
 - Servings stated by source: 336; estimated: 1297
 - With usable instructions: 1633
-- Priced (at least 80% of ingredients priced): 1373
+- Priced (at least 80% of ingredients priced): 1379
 - Images: {"withLicensedImage":783,"withoutImage":1518}
 
 ### Thermomix

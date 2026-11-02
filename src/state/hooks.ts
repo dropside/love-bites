@@ -75,8 +75,9 @@ export function useBasket(entries: BasketEntry[] | undefined) {
       overrides: Object.fromEntries(choices.map((c) => [c.canonicalId, c.productId])),
       pantry: pantry.filter((p): p is PantryRow & { canonicalId: string } => Boolean(p.canonicalId)).map((p) => ({ canonicalId: p.canonicalId, quantity: p.staple ? null : p.quantity, dim: p.dim })),
       staples: household.stapleIds,
+      preferredBrands: household.preferredBrands,
     };
-  }, [data, pantry, choices, household.stapleIds]);
+  }, [data, pantry, choices, household.stapleIds, household.preferredBrands]);
 
   const basket = useMemo<Basket | null>(() => {
     if (!ctx || !recipes || !entries) return null;

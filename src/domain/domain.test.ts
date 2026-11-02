@@ -4,7 +4,7 @@ import { parseIngredientLine, parseMeasuredIngredient, resolveCanonical, scaleIn
 import { buildMatchTable, scoreProduct } from './matching';
 import { getCanonical } from './ingredients';
 import { optimisePacks, priceStatus, proportionalCost } from './pricing';
-import { applyFilters, emptyFilters, isExcluded, learn, emptyProfile, rankDeck } from './ranking';
+import { applyFilters, emptyFilters, isExcluded, learn, emptyProfile, rankDeck, scoreRecipe } from './ranking';
 import { proposePlan } from './planner';
 import type { Product, Recipe, RecipeIngredient, RecipeSummary } from './types';
 import { convertDim, formatQuantity, normaliseUnit, parseNumber, parsePackSize } from './units';
@@ -244,6 +244,17 @@ describe('shopping basket', () => {
     expect(l.plan?.lines[0].count).toBe(1);
   });
 
+  it('prefers a chosen brand even when dearer, but hand picks still win', () => {
+    const cheap = product('a', 'chicken cheap', 1000, 'g', 800, { brand: 'budget' });
+    const fancy = product('b', 'chicken fancy', 1000, 'g', 1500, { brand: 'tegel' });
+    const m = { 'chicken-breast': [{ productId: 'a', confidence: 1 }, { productId: 'b', confidence: 1 }] };
+    const input = [{ recipeId: 'r', title: 'R', ingredients: [ing('c', 'chicken-breast', 500, 'g')] }];
+    expect(buildBasket(input, ctxOf([cheap, fancy], m)).lines[0].plan?.lines[0].productId).toBe('a');
+    expect(buildBasket(input, ctxOf([cheap, fancy], m, { preferredBrands: ['Tegel'] })).lines[0].plan?.lines[0].productId).toBe('b');
+    expect(buildBasket(input, ctxOf([cheap, fancy], m, { preferredBrands: ['nobody'] })).lines[0].plan?.lines[0].productId).toBe('a');
+    expect(buildBasket(input, ctxOf([cheap, fancy], m, { preferredBrands: ['Tegel'], overrides: { 'chicken-breast': 'a' } })).lines[0].plan?.lines[0].productId).toBe('a');
+  });
+
   it('honours staples, overrides, and free ingredients', () => {
     const basket = buildBasket(
       [{ recipeId: 'r', title: 'R', ingredients: [ing('s', 'salt', 5, 'ml'), ing('w', 'water', 500, 'ml'), ing('c', 'chicken-breast', 100, 'g')] }],
@@ -276,6 +287,16 @@ describe('ranking and filters', () => {
     expect(isExcluded(summary('a', { allergens: ['nuts'] }), { ...ctx, allergies: ['nuts'] })).toBe(true);
     expect(isExcluded(summary('a', { hasUnknownIngredients: true }), { ...ctx, allergies: ['nuts'] })).toBe(true);
     expect(isExcluded(summary('a'), { ...ctx, allergies: ['nuts'] })).toBe(false);
+  });
+  it('caps cost per serve only where the price is known', () => {
+    const c = { ...ctx, maxPerServeCents: 300 };
+    expect(isExcluded(summary('a', { valueCents: 2000, servings: 4 }), c)).toBe(true);
+    expect(isExcluded(summary('a', { valueCents: 800, servings: 4 }), c)).toBe(false);
+    expect(isExcluded(summary('a', { valueCents: null }), c)).toBe(false);
+  });
+  it('ranks preferred meal types higher', () => {
+    const r = summary('a', { mealTypes: ['baking'] });
+    expect(scoreRecipe(r, { ...ctx, preferredMeals: ['baking'] })).toBeGreaterThan(scoreRecipe(r, ctx));
   });
   it('is deterministic', () => {
     const list = Array.from({ length: 30 }, (_, i) => summary(`r${i}`, { cuisine: i % 2 ? 'Thai' : 'Italian' }));

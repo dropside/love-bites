@@ -67,10 +67,12 @@ export function DiscoverScreen() {
       allergies: household.allergies,
       dislikedIds: new Set(household.dislikedIds),
       dietary: household.dietary,
+      maxPerServeCents: household.maxPerServeCents,
+      preferredMeals: household.preferredMeals,
     });
     return applySort(ranked, filters.sort);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtered, epoch, household.allergies, household.dislikedIds, household.dietary, swipes === undefined, pantryIds, matchedIds]);
+  }, [filtered, epoch, household.allergies, household.dislikedIds, household.dietary, household.maxPerServeCents, household.preferredMeals, swipes === undefined, pantryIds, matchedIds]);
 
   const deck = useMemo(() => order.filter((r) => !swiped.has(r.id)), [order, swiped]);
   const cards = useMemo(() => deck.slice(0, 2).map((recipe) => ({ recipe, availability: availabilityScore(recipe, { pantryIds, matchedIds }) })), [deck, pantryIds, matchedIds]);

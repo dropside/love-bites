@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T04:49:44.244Z",
+  "generatedAt": "2026-11-02T05:49:27.704Z",
   "recipes": {
     "totalDistinct": 2301,
     "candidatesBeforeDedupe": 2389,
@@ -37,7 +37,7 @@
       "withLicensedImage": 783,
       "withoutImage": 1518
     },
-    "pricedRecipes": 1373,
+    "pricedRecipes": 1379,
     "distinctTitleKeys": 2301,
     "importStats": {
       "wbSkippedNonRecipe": 3,
@@ -74,7 +74,7 @@
     "matching": {
       "canonicalIngredients": 189,
       "canonicalMatched": 186,
-      "productsInMatchTable": 1034,
+      "productsInMatchTable": 1556,
       "ingredientLinesInReliableRecipes": 15510,
       "ingredientLinesWithProductMatch": 14906,
       "lineMatchCoveragePct": 96.1,

@@ -111,7 +111,7 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
         <div className="flex items-center justify-between"><span className="text-sm font-bold">Default servings</span><Stepper label="default servings" value={h.defaultServings} onChange={(defaultServings) => void saveHousehold({ defaultServings })} /></div>
         <div className="flex items-center justify-between"><span className="text-sm font-bold">Meals per week</span><Stepper label="meals per week" value={h.mealsPerWeek} max={14} onChange={(mealsPerWeek) => void saveHousehold({ mealsPerWeek })} /></div>
         <Field label="Longest cook time"><select className={selectClass} value={h.maxMinutes ?? ''} onChange={(e) => void saveHousehold({ maxMinutes: e.target.value ? +e.target.value : null })}><option value="">No limit</option>{[20, 30, 45, 60, 90].map((m) => <option key={m} value={m}>{m} minutes</option>)}</select></Field>
-        <div><p className="mb-1 text-sm font-bold">Preferred meals</p><div className="flex flex-wrap gap-2">{MEALS.map((m) => <Chip key={m} className="capitalize" active={h.preferredMeals.includes(m)} onClick={() => void saveHousehold({ preferredMeals: toggle(h.preferredMeals, m) })}>{m}</Chip>)}</div></div>
+        <div><p className="mb-1 text-sm font-bold">Preferred meals</p><p className="mb-1 text-xs text-muted">Shows more of these in the feed and smart plans.</p><div className="flex flex-wrap gap-2">{MEALS.map((m) => <Chip key={m} className="capitalize" active={h.preferredMeals.includes(m)} onClick={() => void saveHousehold({ preferredMeals: toggle(h.preferredMeals, m) })}>{m}</Chip>)}</div></div>
         <label className="flex items-center gap-3 font-bold"><input type="checkbox" className="h-6 w-6 accent-[#19171B]" checked={h.showBreakfastSnacks} onChange={(e) => void saveHousehold({ showBreakfastSnacks: e.target.checked })} /> Show breakfast and snacks in the planner</label>
       </Section>
 
@@ -127,7 +127,7 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
         <div className="grid grid-cols-2 gap-3">
           <Field label="Weekly meal budget ($)"><input key={`w${h.weeklyBudgetCents}`} inputMode="decimal" data-testid="budget-weekly" className={inputClass} defaultValue={money(h.weeklyBudgetCents)} onBlur={(e) => void saveHousehold({ weeklyBudgetCents: toCents(e.target.value) })} /></Field>
           <Field label="Dinner-only budget ($)"><input key={`d${h.dinnerBudgetCents}`} inputMode="decimal" className={inputClass} defaultValue={money(h.dinnerBudgetCents)} onBlur={(e) => void saveHousehold({ dinnerBudgetCents: toCents(e.target.value) })} /></Field>
-          <Field label="Max per serving ($)"><input key={`s${h.maxPerServeCents}`} inputMode="decimal" className={inputClass} defaultValue={money(h.maxPerServeCents)} onBlur={(e) => void saveHousehold({ maxPerServeCents: toCents(e.target.value) })} /></Field>
+          <Field label="Max per serving ($)" hint="Hides dearer recipes from the feed and smart plans."><input key={`s${h.maxPerServeCents}`} inputMode="decimal" className={inputClass} defaultValue={money(h.maxPerServeCents)} onBlur={(e) => void saveHousehold({ maxPerServeCents: toCents(e.target.value) })} /></Field>
         </div>
       </Section>
 
@@ -135,7 +135,7 @@ export default function SettingsScreen({ onLock }: { onLock: () => void }) {
         <Field label="Preferred store" hint="For your reference. Prices are generic online prices and aren't specific to this store.">
           <input key={h.store} className={inputClass} defaultValue={h.store} placeholder="e.g. Woolworths Ponsonby" onBlur={(e) => void saveHousehold({ store: e.target.value })} />
         </Field>
-        <Field label="Preferred brands" hint="Comma separated">
+        <Field label="Preferred brands" hint="Comma separated. Chosen first when a suitable product exists, even if dearer. Your hand-picked products still win.">
           <input key={h.preferredBrands.join()} className={inputClass} defaultValue={h.preferredBrands.join(', ')} onBlur={(e) => void saveHousehold({ preferredBrands: e.target.value.split(',').map((b) => b.trim()).filter(Boolean) })} />
         </Field>
         <p className="flex flex-wrap items-center gap-2 text-sm"><Tag tone={status === 'current' ? 'lime' : 'warn'}>{PRICE_STATUS_LABEL[status]}</Tag>{manifest?.products && <>Updated {new Date(manifest.products.observedAt).toLocaleDateString('en-NZ')}</>}</p>

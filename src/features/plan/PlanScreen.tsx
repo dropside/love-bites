@@ -94,13 +94,15 @@ export function PlanScreen() {
     if (!ctx || !index) return;
     setBusy(true);
     await new Promise((r) => setTimeout(r, 30));
-    const saved = savedRecipes.filter((r) => r.completeness === 'complete');
+    const withinCap = (r: RecipeSummary) => household.maxPerServeCents == null || r.valueCents == null || r.valueCents / r.servings <= household.maxPerServeCents;
+    const preferred = (r: RecipeSummary) => household.preferredMeals.some((m) => r.mealTypes.includes(m));
+    const saved = savedRecipes.filter((r) => r.completeness === 'complete' && withinCap(r)).sort((a, b) => Number(preferred(b)) - Number(preferred(a)));
     const passed = new Set(swipes?.filter((s) => s.action === 'pass').map((s) => s.recipeId));
     let pool = saved;
     // Surprises and small cookbooks draw on well-priced catalogue recipes she hasn't rejected.
     if (strategy === 'surprise' || saved.length < household.mealsPerWeek + 3) {
       const extra = index
-        .filter((r) => r.completeness === 'complete' && r.valueCents != null && !passed.has(r.id) && !saved.includes(r) && r.mealTypes.includes('dinner') && !r.allergens.some((a) => household.allergies.includes(a)) && !r.hasUnknownIngredients && household.dietary.every((d) => r.dietary.includes(d)) && !r.ingredientIds.some((i) => household.dislikedIds.includes(i)))
+        .filter((r) => r.completeness === 'complete' && r.valueCents != null && !passed.has(r.id) && !saved.includes(r) && withinCap(r) && (household.preferredMeals.length ? preferred(r) : r.mealTypes.includes('dinner')) && !r.allergens.some((a) => household.allergies.includes(a)) && !r.hasUnknownIngredients && household.dietary.every((d) => r.dietary.includes(d)) && !r.ingredientIds.some((i) => household.dislikedIds.includes(i)))
         .sort((a, b) => (a.valueCents! / a.servings) - (b.valueCents! / b.servings))
         .slice(0, 400);
       const step = Math.max(1, Math.floor(extra.length / 30));

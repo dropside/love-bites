@@ -42,7 +42,7 @@ function comparableUnitPrice(p: Product): number | null {
 }
 
 /** Ranked candidates: name quality first, then per-unit price, with a stable tiebreak. */
-export function rankCandidates(c: CanonicalIngredient, products: Product[], limit = 8): ProductMatchEntry[] {
+export function rankCandidates(c: CanonicalIngredient, products: Product[], limit = 16): ProductMatchEntry[] {
   const scored: { p: Product; s: number; u: number }[] = [];
   for (const p of products) {
     const s = scoreProduct(c, p);

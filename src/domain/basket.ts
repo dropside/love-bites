@@ -26,6 +26,8 @@ export interface BasketContext {
   pantry?: PantryStock[];
   /** Canonical IDs treated as already at home without quantities. */
   staples?: string[];
+  /** Brands to choose first when a suitable product exists, even if dearer. */
+  preferredBrands?: string[];
 }
 
 export interface BasketLine {
@@ -170,7 +172,13 @@ function optionsFor(
     const conv = convertDim(o.qty, o.dim, dim, shelfItem);
     if (conv != null) opts.push({ ...o, qty: conv, dim });
   }
-  return { options: opts, confidence: entries[0]?.confidence ?? 0, forcedId: override ?? null };
+  // A hand-picked product already wins; otherwise favour preferred brands where one fits.
+  const brands = (ctx.preferredBrands ?? []).map((b) => b.trim().toLowerCase()).filter(Boolean);
+  const preferred = override || !brands.length ? [] : opts.filter((o) => {
+    const p = ctx.products.get(o.productId);
+    return p && brands.some((b) => p.brand?.toLowerCase().includes(b) || p.name.includes(b));
+  });
+  return { options: preferred.length ? preferred : opts, confidence: entries[0]?.confidence ?? 0, forcedId: override ?? null };
 }
 
 export function buildBasket(recipes: BasketRecipeInput[], ctx: BasketContext): Basket {

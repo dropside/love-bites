@@ -62,11 +62,15 @@ export interface RankContext {
   allergies: Allergen[];
   dislikedIds: Set<string>;
   dietary: string[];
+  /** Hard cap where a price is known. Unknown prices stay in, and are never treated as cheap. */
+  maxPerServeCents?: number | null;
+  preferredMeals?: string[];
   seed?: number;
 }
 
 /** Hard exclusions. Allergies and dietary needs are never just a score penalty. */
-export function isExcluded(r: RecipeSummary, ctx: Pick<RankContext, 'allergies' | 'dislikedIds' | 'dietary'>): boolean {
+export function isExcluded(r: RecipeSummary, ctx: Pick<RankContext, 'allergies' | 'dislikedIds' | 'dietary' | 'maxPerServeCents'>): boolean {
+  if (ctx.maxPerServeCents != null && r.valueCents != null && r.valueCents / r.servings > ctx.maxPerServeCents) return true;
   if (ctx.allergies.length) {
     if (r.allergens.some((a) => ctx.allergies.includes(a))) return true;
     // Can't vouch for what we can't identify.
@@ -101,6 +105,7 @@ export function scoreRecipe(r: RecipeSummary, ctx: RankContext): number {
   for (const m of r.mealTypes) pref += (p.mealTypes[m] ?? 0) * 0.15;
   for (const t of r.tags) pref += (p.tags[t] ?? 0) * 0.1;
   for (const i of r.ingredientIds) pref += (p.ingredients[i] ?? 0) * 0.05;
+  if (ctx.preferredMeals?.some((m) => r.mealTypes.includes(m))) pref += 0.6;
   const prefScore = clamp01(0.5 + pref / 4);
   const avgMin = p.minutes.length ? p.minutes.reduce((a, b) => a + b, 0) / p.minutes.length : 40;
   const time = r.totalMinutes == null ? 0.4 : clamp01(1 - Math.max(0, r.totalMinutes - avgMin) / 90);
