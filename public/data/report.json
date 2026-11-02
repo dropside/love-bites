@@ -1,0 +1,253 @@
+{
+  "generatedAt": "2026-11-02T04:49:44.244Z",
+  "recipes": {
+    "totalDistinct": 2301,
+    "candidatesBeforeDedupe": 2389,
+    "duplicatesRemoved": 88,
+    "byCompleteness": {
+      "complete": 1588,
+      "discovery-only": 668,
+      "needs-review": 45
+    },
+    "bySource": {
+      "Wikibooks Cookbook": 850,
+      "TheMealDB": 783,
+      "ThermoFun": 425,
+      "ThermoBliss": 243
+    },
+    "byRights": {
+      "full-text": 1633,
+      "link-only": 668
+    },
+    "byLicense": {
+      "CC BY-SA 4.0": 850,
+      "TheMealDB API terms (content from official endpoints may be copied and modified; credit TheMealDB)": 783,
+      "All rights reserved by the author: link only": 668
+    },
+    "servingsStatedBySource": 336,
+    "servingsEstimated": 1297,
+    "withUsableInstructions": 1633,
+    "thermomix": {
+      "nativeSourceLinkOnly": 668,
+      "suitableUnverified": 173,
+      "verifiedMachineSettings": 0,
+      "unverifiedConversions": 0
+    },
+    "images": {
+      "withLicensedImage": 783,
+      "withoutImage": 1518
+    },
+    "pricedRecipes": 1373,
+    "distinctTitleKeys": 2301,
+    "importStats": {
+      "wbSkippedNonRecipe": 3,
+      "wbRejectedStructure": 237,
+      "wbRejectedQuality": 2761,
+      "thermomixLinksSkipped": 359
+    }
+  },
+  "woolworths": {
+    "source": "neon-ninja/woolies public snapshot of Woolworths NZ online prices",
+    "observedAt": "2026-11-01T17:03:02.000Z",
+    "storeContext": "Generic online pricing: the snapshot does not identify a specific store",
+    "uniqueProducts": 11074,
+    "categories": {
+      "Pantry": 4814,
+      "Fridge & Deli": 1718,
+      "Beer & Wine": 1318,
+      "Drinks": 1215,
+      "Frozen": 691,
+      "Bakery": 438,
+      "Dinner": 332,
+      "Fruit & Veg": 324,
+      "Meat & Poultry": 202,
+      "Fish & Seafood": 22
+    },
+    "validPrices": 11074,
+    "withPackQuantity": 10653,
+    "variableWeight": 212,
+    "onSpecial": 3863,
+    "storeSpecificObservations": 0,
+    "rejects": {
+      "non-food department": 6313
+    },
+    "matching": {
+      "canonicalIngredients": 189,
+      "canonicalMatched": 186,
+      "productsInMatchTable": 1034,
+      "ingredientLinesInReliableRecipes": 15510,
+      "ingredientLinesWithProductMatch": 14906,
+      "lineMatchCoveragePct": 96.1,
+      "canonicalUsedButUnmatched": [
+        "rocket",
+        "caraway"
+      ],
+      "ambiguousMatches": [],
+      "topUnresolvedIngredients": [
+        [
+          "dulce de leche",
+          9
+        ],
+        [
+          "almond extract",
+          9
+        ],
+        [
+          "harissa spice",
+          8
+        ],
+        [
+          "berbere spice blend",
+          8
+        ],
+        [
+          "squid",
+          7
+        ],
+        [
+          "tamarind paste",
+          6
+        ],
+        [
+          "hotsauce",
+          6
+        ],
+        [
+          "ground cardomom",
+          5
+        ],
+        [
+          "starch",
+          5
+        ],
+        [
+          "digestive biscuits",
+          4
+        ],
+        [
+          "celeriac",
+          4
+        ],
+        [
+          "suet",
+          4
+        ],
+        [
+          "sauerkraut",
+          4
+        ],
+        [
+          "prunes",
+          4
+        ],
+        [
+          "clams",
+          4
+        ],
+        [
+          "gruyère",
+          4
+        ],
+        [
+          "broad beans",
+          4
+        ],
+        [
+          "all-purpose seasoning",
+          4
+        ],
+        [
+          "galangal",
+          4
+        ],
+        [
+          "blackberries",
+          3
+        ],
+        [
+          "tapioca",
+          3
+        ],
+        [
+          "radish",
+          3
+        ],
+        [
+          "ginger paste",
+          3
+        ],
+        [
+          "custard",
+          3
+        ],
+        [
+          "water chestnut",
+          3
+        ],
+        [
+          "makrut lime leaves",
+          3
+        ],
+        [
+          "lime leaves",
+          3
+        ],
+        [
+          "pak choi",
+          3
+        ],
+        [
+          "",
+          3
+        ],
+        [
+          "pul biber",
+          2
+        ],
+        [
+          "duck sauce",
+          2
+        ],
+        [
+          "kaffir lime leaves",
+          2
+        ],
+        [
+          "callaloo",
+          2
+        ],
+        [
+          "black pudding",
+          2
+        ],
+        [
+          "almond essence",
+          2
+        ],
+        [
+          "brie",
+          2
+        ],
+        [
+          "daikon radish",
+          2
+        ],
+        [
+          "oxtail",
+          2
+        ],
+        [
+          "marzipan",
+          2
+        ],
+        [
+          "goose fat",
+          2
+        ]
+      ]
+    }
+  },
+  "constraints": [
+    "recipecommunity.com.au: automated access refused (HTTP 403); not imported and no bypass attempted"
+  ]
+}

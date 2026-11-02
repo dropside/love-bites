@@ -1,0 +1,72 @@
+name: Build, test and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Weekly price refresh: Monday 3am NZ time.
+    - cron: '0 14 * * 0'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      # A failed refresh must never break the site: last good prices stay, marked by their real date.
+      - name: Refresh Woolworths prices (scheduled runs only)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          npm run data:refresh-prices
+          git config user.name "love-bites-bot"
+          git config user.email "love-bites-bot@users.noreply.github.com"
+          git add data/catalog public/data reports data/raw/woolworths-meta.json
+          git diff --cached --quiet || (git commit -m "Refresh Woolworths prices" && git push)
+
+      - run: npx tsc -b
+      - run: npm run lint
+      - run: npm test
+      - run: npm run data:audit
+
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results
+          retention-days: 7
+
+      - name: Production build
+        run: npx vite build
+        env:
+          VITE_KITCHEN_CODE_HASH: ${{ vars.KITCHEN_CODE_HASH }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

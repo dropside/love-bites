@@ -1,0 +1,541 @@
+{
+  "generatedAt": "2026-11-02T04:47:52.679Z",
+  "candidates": 2389,
+  "kept": 2301,
+  "stats": {
+    "wbSkippedNonRecipe": 3,
+    "wbRejectedStructure": 237,
+    "wbRejectedQuality": 2761,
+    "thermomixLinksSkipped": 359
+  },
+  "duplicates": [
+    {
+      "id": "mealdb-53454",
+      "title": "Breadfruit in Butter Sauce Recipe",
+      "duplicateOf": "mealdb-53458",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "mealdb-52896",
+      "title": "Full English Breakfast",
+      "duplicateOf": "mealdb-52895",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "mealdb-53515",
+      "title": "Manjar (Dulce de Leche)",
+      "duplicateOf": "mealdb-53137",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "mealdb-53233",
+      "title": "Salt & pepper squid",
+      "duplicateOf": "mealdb-53108",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "mealdb-53314",
+      "title": "Sauerkraut pierogii",
+      "duplicateOf": "mealdb-53296",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "mealdb-53164",
+      "title": "Spanish Chicken",
+      "duplicateOf": "mealdb-53143",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "mealdb-52926",
+      "title": "Tourtiere",
+      "duplicateOf": "mealdb-53343",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-anzac-biscuits-ii",
+      "title": "Anzac Biscuits II",
+      "duplicateOf": "wb-anzac-biscuits-i",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-apple-crisp-ii",
+      "title": "Apple Crisp II",
+      "duplicateOf": "wb-apple-crisp-i",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-black-bean-soup",
+      "title": "Black Bean Soup",
+      "duplicateOf": "mealdb-53546",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-carrot-cake-ii",
+      "title": "Carrot Cake II",
+      "duplicateOf": "mealdb-52897",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-cheese-dumplings",
+      "title": "Cheese Dumplings",
+      "duplicateOf": "mealdb-53445",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-chocolate-chip-cookies-ii",
+      "title": "Chocolate Chip Cookies II",
+      "duplicateOf": "wb-brown-butter-toffee-chocolate-chip-cookies",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-chocolate-chip-cookies-iii",
+      "title": "Chocolate Chip Cookies III",
+      "duplicateOf": "wb-brown-butter-toffee-chocolate-chip-cookies",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-chocolate-chip-cookies-iv",
+      "title": "Chocolate Chip Cookies IV",
+      "duplicateOf": "wb-brown-butter-toffee-chocolate-chip-cookies",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-chocolate-chip-pancakes-ii",
+      "title": "Chocolate Chip Pancakes II",
+      "duplicateOf": "wb-chocolate-chip-pancakes-i",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-date-squares",
+      "title": "Date Squares",
+      "duplicateOf": "mealdb-53338",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-falafel",
+      "title": "Falafel",
+      "duplicateOf": "mealdb-53266",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-flapjacks-traditional-scottish-recipe",
+      "title": "Flapjacks (Traditional Scottish Recipe)",
+      "duplicateOf": "wb-basic-flapjacks",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-hot-and-sour-soup",
+      "title": "Hot and Sour Soup",
+      "duplicateOf": "mealdb-52954",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-jamaican-banana-fritters",
+      "title": "Jamaican Banana Fritters",
+      "duplicateOf": "mealdb-53351",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-kansas-city-barbecue-sauce",
+      "title": "Kansas City Barbecue Sauce",
+      "duplicateOf": "wb-barbecue-sauce-kansas-city-style",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-kung-pao-chicken",
+      "title": "Kung Pao Chicken",
+      "duplicateOf": "mealdb-52945",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-lefse-norwegian-potato-flatbread",
+      "title": "Lefse (Norwegian Potato Flatbread)",
+      "duplicateOf": "mealdb-53121",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-lemon-poppy-seed-pancakes",
+      "title": "Lemon Poppy Seed Pancakes",
+      "duplicateOf": "wb-lemon-blueberry-pancakes",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-macaroni-pie",
+      "title": "Macaroni Pie",
+      "duplicateOf": "mealdb-53461",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-microwave-chocolate-cake-i",
+      "title": "Microwave Chocolate Cake I",
+      "duplicateOf": "wb-chocolate-chocolate-chip-muffins",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-mock-hollandaise-sauce-i",
+      "title": "Mock Hollandaise Sauce I",
+      "duplicateOf": "wb-hollandaise-sauce",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-never-fail-pie-crust",
+      "title": "Never Fail Pie Crust",
+      "duplicateOf": "wb-grandma-s-pie-crust",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-new-york-cheesecake",
+      "title": "New York Cheesecake",
+      "duplicateOf": "mealdb-52858",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-oatmeal-chocolate-chip-cookies-ii",
+      "title": "Oatmeal Chocolate Chip Cookies II",
+      "duplicateOf": "wb-brown-butter-toffee-chocolate-chip-cookies",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-oatmeal-chocolate-chip-cookies-iii",
+      "title": "Oatmeal Chocolate Chip Cookies III",
+      "duplicateOf": "wb-brown-butter-toffee-chocolate-chip-cookies",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-oven-pancakes-vegan",
+      "title": "Oven Pancakes (Vegan)",
+      "duplicateOf": "wb-oven-pancakes",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-peanut-brittle",
+      "title": "Peanut Brittle",
+      "duplicateOf": "wb-microwave-peanut-brittle",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-peanut-butter-cookies",
+      "title": "Peanut Butter Cookies",
+      "duplicateOf": "mealdb-52958",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-pumpkin-bread-ii",
+      "title": "Pumpkin Bread II",
+      "duplicateOf": "wb-pumpkin-bread-i",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-rhubarb-cake",
+      "title": "Rhubarb Cake",
+      "duplicateOf": "wb-banana-cake",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-shrewsbury-cakes",
+      "title": "Shrewsbury Cakes",
+      "duplicateOf": "wb-biscuit-cake",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-simple-biryani",
+      "title": "Simple Biryani",
+      "duplicateOf": "wb-biryani",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-snickerdoodles-ii",
+      "title": "Snickerdoodles II",
+      "duplicateOf": "wb-snickerdoodles-i",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-snickerdoodles-iv",
+      "title": "Snickerdoodles IV",
+      "duplicateOf": "wb-snickerdoodles-i",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-spaghetti-alla-carbonara",
+      "title": "Spaghetti alla Carbonara",
+      "duplicateOf": "mealdb-52982",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-spelt-bread",
+      "title": "Spelt Bread",
+      "duplicateOf": "wb-rosemary-bread",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-sticky-toffee-pudding-with-dates",
+      "title": "Sticky Toffee Pudding (with dates)",
+      "duplicateOf": "mealdb-52793",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-thai-peanut-fried-rice-vegan",
+      "title": "Thai Peanut Fried Rice (Vegan)",
+      "duplicateOf": "wb-thai-peanut-fried-rice",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-traditional-lasagne",
+      "title": "Traditional Lasagne",
+      "duplicateOf": "mealdb-52844",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "wb-traditional-pound-cake",
+      "title": "Traditional Pound Cake",
+      "duplicateOf": "mealdb-52901",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-waffles",
+      "title": "Waffles",
+      "duplicateOf": "wb-breakfast-waffles",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-yeasted-rolls-ii",
+      "title": "Yeasted Rolls II",
+      "duplicateOf": "wb-yeasted-rolls-i",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-yetakelt-wot-ethiopian-spiced-vegetable-stew",
+      "title": "Yetakelt Wot (Ethiopian Spiced Vegetable Stew)",
+      "duplicateOf": "wb-yetakelt-alicha-ethiopian-vegetable-stew",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "wb-zhug-iii",
+      "title": "Zhug III",
+      "duplicateOf": "wb-zhug-ii",
+      "reason": "similar title and ingredients"
+    },
+    {
+      "id": "tmx-thermobliss-chicken-soup",
+      "title": "Chicken Soup",
+      "duplicateOf": "wb-easy-chicken-soup",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-thai-pumpkin-soup",
+      "title": "Thai Pumpkin Soup",
+      "duplicateOf": "mealdb-53210",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-anzac-biscuits",
+      "title": "Anzac Biscuits",
+      "duplicateOf": "mealdb-53111",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-blueberry-muffins",
+      "title": "Blueberry Muffins",
+      "duplicateOf": "wb-blueberry-muffin",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-sticky-date-pudding",
+      "title": "Sticky Date Pudding",
+      "duplicateOf": "wb-sticky-date-pudding",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-apple-pie",
+      "title": "Apple Pie",
+      "duplicateOf": "mealdb-53575",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-banana-cake",
+      "title": "Banana Cake",
+      "duplicateOf": "wb-banana-cake",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-carrot-cake",
+      "title": "Carrot Cake",
+      "duplicateOf": "mealdb-52897",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-banana-pancakes",
+      "title": "Banana Pancakes",
+      "duplicateOf": "mealdb-52855",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-hummus",
+      "title": "Hummus",
+      "duplicateOf": "mealdb-53269",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-christmas-pudding",
+      "title": "Christmas Pudding",
+      "duplicateOf": "mealdb-52988",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-hot-cross-buns",
+      "title": "Hot Cross Buns",
+      "duplicateOf": "wb-hot-cross-bun",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-french-onion-soup",
+      "title": "French Onion Soup",
+      "duplicateOf": "mealdb-52903",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermobliss-butterscotch-sauce",
+      "title": "Butterscotch Sauce",
+      "duplicateOf": "wb-butterscotch-sauce",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-tikka-chicken",
+      "title": "Tikka Chicken",
+      "duplicateOf": "wb-chicken-tikka",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-semolina-pudding",
+      "title": "Semolina Pudding",
+      "duplicateOf": "wb-semolina-pudding",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-chickpea-chorizo-soup",
+      "title": "Chickpea Chorizo Soup",
+      "duplicateOf": "mealdb-53168",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-creamy-mushroom-soup",
+      "title": "Creamy Mushroom Soup",
+      "duplicateOf": "tmx-thermobliss-creamy-mushroom-soup",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-jam-drops",
+      "title": "Jam Drops",
+      "duplicateOf": "tmx-thermobliss-jam-drops",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-banana-cake",
+      "title": "Banana Cake",
+      "duplicateOf": "wb-banana-cake",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-taco-seasoning",
+      "title": "Taco Seasoning",
+      "duplicateOf": "tmx-thermofun-taco-seasoning",
+      "reason": "same id"
+    },
+    {
+      "id": "tmx-thermofun-nutella-cheesecake",
+      "title": "Nutella Cheesecake",
+      "duplicateOf": "tmx-thermobliss-nutella-cheesecake",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-mars-bar-slice",
+      "title": "Mars Bar Slice",
+      "duplicateOf": "tmx-thermobliss-mars-bar-slice",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-cashew-basil-parmesan-dip",
+      "title": "Cashew Basil Parmesan Dip",
+      "duplicateOf": "tmx-thermofun-basil-cashew-parmesan-dip",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-tomato-chutney",
+      "title": "Tomato Chutney",
+      "duplicateOf": "tmx-thermobliss-tomato-chutney",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-tandoori-chicken",
+      "title": "Tandoori Chicken",
+      "duplicateOf": "mealdb-52806",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-curry-blend",
+      "title": "Curry Blend",
+      "duplicateOf": "tmx-thermofun-curry-blend",
+      "reason": "same id"
+    },
+    {
+      "id": "tmx-thermofun-thai-style-pumpkin-soup",
+      "title": "Thai Style Pumpkin Soup",
+      "duplicateOf": "mealdb-53210",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-pancakes",
+      "title": "Pancakes",
+      "duplicateOf": "mealdb-52854",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-anzac-biscuits",
+      "title": "Anzac Biscuits",
+      "duplicateOf": "mealdb-53111",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-anzac-slice",
+      "title": "Anzac Slice",
+      "duplicateOf": "tmx-thermobliss-anzac-slice",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-triple-chocolate-chip-cookies",
+      "title": "Triple Chocolate Chip Cookies",
+      "duplicateOf": "wb-triple-chocolate-chip-cookies",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-chicken-fajitas",
+      "title": "Chicken Fajitas",
+      "duplicateOf": "wb-chicken-fajitas",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-fudge",
+      "title": "Fudge",
+      "duplicateOf": "tmx-thermobliss-easy-fudge",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-lemon-curd",
+      "title": "Lemon Curd",
+      "duplicateOf": "wb-lemon-curd",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-yorkshire-pudding",
+      "title": "Yorkshire Pudding",
+      "duplicateOf": "mealdb-53097",
+      "reason": "same normalised title"
+    },
+    {
+      "id": "tmx-thermofun-herb-and-garlic-dip",
+      "title": "Herb And Garlic Dip",
+      "duplicateOf": "tmx-thermobliss-herb-and-garlic-dip",
+      "reason": "same normalised title"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/dm-sans';
+
+@theme {
+  --color-hot: #ff0a8c;
+  --color-pop: #ff62b5;
+  --color-gum: #f7b9dd;
+  --color-pale: #ffe8f4;
+  --color-bg: #fff9fc;
+  --color-cream: #fff6e8;
+  --color-ink: #19171b;
+  --color-muted: #625c68;
+  --color-line: #f2dfeb;
+  --color-lime: #d9ea68;
+  --color-lime-deep: #5d6b00;
+  --color-coral: #ff8095;
+  --color-deep: #b8005f;
+  --color-danger: #b3122f;
+
+  --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1.75rem;
+  --shadow-card: 0 10px 30px -14px rgb(180 40 120 / 0.28);
+  --shadow-pop: 0 18px 44px -14px rgb(25 23 27 / 0.45);
+}
+
+@layer base {
+  html, body { min-height: 100%; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--color-ink); outline-offset: 2px; }
+}
+
+@layer components {
+  .safe-b { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
+  .safe-t { padding-top: max(env(safe-area-inset-top), 0.5rem); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+  .display { font-weight: 800; letter-spacing: -0.03em; }
+  .marker { font-weight: 600; font-style: italic; }
+  .skeleton { background: linear-gradient(100deg, #fbe7f2 30%, #fff3fa 50%, #fbe7f2 70%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+
+  /* Poster fallback when a recipe has no licensed photo: nothing is ever hotlinked without rights. */
+  .poster { background: var(--color-pop); position: relative; overflow: hidden; }
+  .poster::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 15% 20%, var(--color-hot) 0 11%, transparent 11.5%), radial-gradient(circle at 88% 78%, var(--color-gum) 0 22%, transparent 22.5%), radial-gradient(circle at 80% 12%, var(--color-lime) 0 7%, transparent 7.5%); }
+  .poster.alt { background: var(--color-lime); }
+  .poster.alt::before { background: radial-gradient(circle at 85% 18%, var(--color-pop) 0 16%, transparent 16.5%), radial-gradient(circle at 10% 85%, var(--color-ink) 0 7%, transparent 7.5%); }
+  .poster.alt2 { background: var(--color-gum); }
+  .poster.alt2::before { background: radial-gradient(circle at 12% 15%, var(--color-coral) 0 13%, transparent 13.5%), radial-gradient(circle at 90% 88%, var(--color-hot) 0 18%, transparent 18.5%); }
+}
+
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
