@@ -87,7 +87,7 @@ export function SwipeDeck({ cards, onSwipe, onUndo, canUndo }: { cards: DeckCard
     <section aria-label="Recipe recommendations">
       <div className="relative mx-auto h-[max(320px,calc(100dvh-420px))] max-h-[560px] w-full max-w-md select-none">
         {second && (
-          <motion.div aria-hidden style={{ scale: nextScale }} className="absolute inset-0 overflow-hidden rounded-[2rem] bg-white shadow-[var(--shadow-card)]" key={second.recipe.id}>
+          <motion.div aria-hidden style={{ scale: nextScale }} className="absolute inset-0 isolate z-0 overflow-hidden rounded-[2rem] bg-white shadow-[var(--shadow-card)]" key={second.recipe.id}>
             <CardFace info={second} />
           </motion.div>
         )}
@@ -107,11 +107,11 @@ export function SwipeDeck({ cards, onSwipe, onUndo, canUndo }: { cards: DeckCard
               setTimeout(() => { dragged.current = false; }, 50);
             }}
             onClick={() => { if (!dragged.current) navigate(`/recipe/${top.recipe.id}`); }}
-            className="absolute inset-0 cursor-grab overflow-hidden rounded-[2rem] bg-white shadow-[var(--shadow-pop)] active:cursor-grabbing"
+            className="absolute inset-0 isolate z-10 cursor-grab overflow-hidden rounded-[2rem] bg-white shadow-[var(--shadow-pop)] active:cursor-grabbing"
           >
             <CardFace info={top} large />
-            <motion.span style={{ opacity: loveOpacity }} className="marker pointer-events-none absolute left-5 top-14 -rotate-12 rounded-xl border-4 border-hot bg-white/90 px-3 py-1 text-4xl text-hot">LOVE IT</motion.span>
-            <motion.span style={{ opacity: passOpacity }} className="marker pointer-events-none absolute right-5 top-14 rotate-12 rounded-xl border-4 border-ink bg-white/90 px-3 py-1 text-4xl text-ink">NAH</motion.span>
+            <motion.span style={{ opacity: loveOpacity }} className="display pointer-events-none absolute left-5 top-14 z-20 -rotate-12 rounded-xl border-4 border-hot bg-white px-3 py-1 text-4xl text-hot">LOVE IT</motion.span>
+            <motion.span style={{ opacity: passOpacity }} className="display pointer-events-none absolute right-5 top-14 z-20 rotate-12 rounded-xl border-4 border-ink bg-white px-3 py-1 text-4xl text-ink">NAH</motion.span>
           </motion.div>
         )}
       </div>

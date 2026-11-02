@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Layers, LayoutList, Search, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Empty, ErrorState, IconButton, inputClass, Skeleton, Tag, useFeedback } from '../../components/ui';
@@ -9,6 +9,7 @@ import type { RecipeSummary } from '../../domain/types';
 import { db, weekStartOf } from '../../state/db';
 import { useCatalogIndex, useHousehold } from '../../state/hooks';
 import { FilterSheet } from './FilterSheet';
+import { RecipeList } from './RecipeList';
 import { SwipeDeck } from './SwipeDeck';
 import { recordSwipe, undoLastSwipe } from './swipeActions';
 
@@ -28,6 +29,20 @@ export function DiscoverScreen() {
     }
   });
   const [sheet, setSheet] = useState(false);
+  const [view, setView] = useState<'cards' | 'list'>(() => {
+    try {
+      return localStorage.getItem('lb-discover-view') === 'list' ? 'list' : 'cards';
+    } catch {
+      return 'cards';
+    }
+  });
+  const switchView = () => {
+    const next = view === 'cards' ? 'list' : 'cards';
+    setView(next);
+    try {
+      localStorage.setItem('lb-discover-view', next);
+    } catch { /* just won't be remembered */ }
+  };
   const [epoch, setEpoch] = useState(0);
   const { toast } = useFeedback();
   const swipedCount = useRef(0);
@@ -79,8 +94,9 @@ export function DiscoverScreen() {
 
   const onSwipe = async (r: RecipeSummary, action: 'love' | 'pass' | 'save') => {
     await recordSwipe(r.id, action);
-    if (action === 'love') toast('In the cookbook. Good taste.');
-    if (action === 'save') toast('Saved for later.');
+    const undo = { label: 'Undo', run: () => void undoLastSwipe() };
+    if (action === 'love') toast('In the cookbook. Good taste.', view === 'list' ? undo : undefined);
+    if (action === 'save') toast('Saved for later.', view === 'list' ? undo : undefined);
     if (++swipedCount.current % 12 === 0) setEpoch((e) => e + 1);
   };
 
@@ -95,7 +111,7 @@ export function DiscoverScreen() {
         <div className="mt-2 flex gap-2 overflow-x-auto no-scrollbar">
           <Link to="/cookbook" className="flex shrink-0 items-center gap-2 rounded-2xl bg-gum px-3.5 py-2"><span className="display text-xl" data-testid="saved-count">{saved ?? 0}</span><span className="text-xs font-bold leading-tight">in your<br />cookbook</span></Link>
           <Link to="/plan" className="flex shrink-0 items-center gap-2 rounded-2xl bg-lime px-3.5 py-2"><span className="display text-xl">{weekMeals?.length ?? 0}</span><span className="text-xs font-bold leading-tight">meals<br />this week</span></Link>
-          <div className="flex shrink-0 items-center gap-2 rounded-2xl bg-white px-3.5 py-2 shadow-[var(--shadow-card)]"><span className="display text-xl">{deck.length}</span><span className="text-xs font-bold leading-tight">left to<br />swipe</span></div>
+          <div className="flex shrink-0 items-center gap-2 rounded-2xl bg-white px-3.5 py-2 shadow-[var(--shadow-card)]"><span className="display text-xl">{deck.length}</span><span className="text-xs font-bold leading-tight">left to<br />explore</span></div>
         </div>
       </section>
 
@@ -104,6 +120,7 @@ export function DiscoverScreen() {
           <Search size={18} aria-hidden className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
           <input type="search" aria-label="Search recipes" placeholder="Search by name or ingredient" value={filters.query} onChange={(e) => setFilters({ ...filters, query: e.target.value })} className={`${inputClass} rounded-full pl-11`} />
         </div>
+        <IconButton icon={view === 'cards' ? LayoutList : Layers} label={view === 'cards' ? 'Show as list' : 'Show as cards'} size={48} data-testid="view-toggle" onClick={switchView} />
         <div className="relative">
           <IconButton icon={SlidersHorizontal} label="Filters" variant="ink" size={48} onClick={() => setSheet(true)} />
           {hasFilters && <span className="pointer-events-none absolute -right-1 -top-1"><Tag tone="lime" className="px-2 py-0.5">{activeFilterCount(filters)}</Tag></span>}
@@ -112,7 +129,8 @@ export function DiscoverScreen() {
 
       {error && <ErrorState message={error} onRetry={() => location.reload()} />}
       {!index && !error && <Skeleton className="mx-auto h-[60dvh] max-w-md" />}
-      {index && deck.length > 0 && (
+      {index && deck.length > 0 && view === 'list' && <RecipeList key={JSON.stringify(filters)} recipes={deck} onSwipe={(r, a) => void onSwipe(r, a)} />}
+      {index && deck.length > 0 && view === 'cards' && (
         <SwipeDeck
           cards={cards}
           onSwipe={(r, a) => void onSwipe(r, a)}

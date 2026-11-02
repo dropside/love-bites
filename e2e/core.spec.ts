@@ -75,6 +75,52 @@ test('Discover shows real recipes; swipes save, reject, undo, and persist', asyn
   await expect(page.getByTestId('cookbook-item')).toContainText(first);
 });
 
+test('the top card stays on top of the next card while dragging', async ({ page }) => {
+  await enter(page);
+  await waitForCard(page);
+  const box = (await page.getByTestId('swipe-card').boundingBox())!;
+  const cx = box.x + box.width / 2;
+  await page.mouse.move(cx, box.y + 60);
+  await page.mouse.down();
+  await page.mouse.move(cx + 60, box.y + 60, { steps: 4 });
+  await page.mouse.move(cx + 130, box.y + 60, { steps: 4 });
+  // Sample across the card, where the back card's title would show through.
+  const points = [0.25, 0.5, 0.75].flatMap((fx) => [100, 140, 180].map((dy) => [box.x + 130 + box.width * fx, box.y + dy]));
+  const onTop = await page.evaluate((pts) => pts.every(([x, y]) => {
+    const front = document.querySelector('[data-testid="swipe-card"]')!;
+    const rect = front.getBoundingClientRect();
+    const hit = document.elementFromPoint(x, y)!;
+    const inside = x > rect.left + 40 && x < rect.right - 40;
+    return !inside || front.contains(hit);
+  }), points);
+  await page.mouse.move(cx, box.y + 60, { steps: 4 });
+  await page.mouse.up();
+  expect(onTop).toBe(true);
+});
+
+test('list view browses recipes, saves from the list, and is remembered', async ({ page }) => {
+  await enter(page);
+  await waitForCard(page);
+  await page.getByTestId('view-toggle').click();
+  const rows = page.getByTestId('discover-row');
+  await expect(rows).toHaveCount(30);
+  await page.getByTestId('show-more').click();
+  await expect(rows).toHaveCount(60);
+  const title = (await rows.first().locator('p').first().textContent())!.trim();
+  await rows.first().getByRole('button', { name: /^Love / }).click();
+  await expect(page.getByTestId('saved-count')).toHaveText('1');
+  await expect(rows.first()).not.toContainText(title);
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByTestId('saved-count')).toHaveText('0');
+  await expect(rows.first()).toContainText(title);
+  await page.getByLabel('Search recipes').fill('chicken');
+  await expect(rows.first()).toBeVisible();
+  await page.reload();
+  await expect(rows.first()).toBeVisible();
+  await rows.first().getByRole('link').click();
+  await expect(page.getByTestId('recipe-title')).toBeVisible();
+});
+
 test('keyboard swipes and tapping opens detail without changing swipe status', async ({ page }) => {
   await enter(page);
   const first = await waitForCard(page);
