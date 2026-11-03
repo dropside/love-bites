@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Archive, ArrowLeft, Baby, CalendarPlus, ChefHat, ExternalLink, FolderPlus, Heart, Pencil, Play, Share2, ShoppingBasket, Star, TimerIcon, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, Baby, CalendarPlus, ChefHat, ExternalLink, FolderPlus, Heart, Pencil, Play, ShoppingBasket, Star, TimerIcon, TriangleAlert } from 'lucide-react';
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CompletenessTag, minutesLabel, RecipeImage, ThermomixTag } from '../../components/RecipeBits';
@@ -9,9 +9,9 @@ import { formatMoney } from '../../domain/pricing';
 import type { BasketLine } from '../../domain/basket';
 import type { Product, Recipe, RecipeIngredient } from '../../domain/types';
 import { formatQuantity, fraction } from '../../domain/units';
-import { activeSession, db, patchCookbook, setBuyStaple, uid } from '../../state/db';
+import { activeSession, db, inCookbook, patchCookbook, restoreCookbookRow, setBuyStaple, setInCookbook, uid } from '../../state/db';
 import { useBasket, useBuyStaples, useGoBack, useHousehold, useRecipe } from '../../state/hooks';
-import { LovedBy, PublishButton, ShareWithFamilyButton } from '../family/FamilyBits';
+import { LovedBy, PublishButton, ShareButton } from '../family/FamilyBits';
 import { AddToPlanSheet } from '../plan/AddToPlanSheet';
 import { ProductPicker, productSize } from '../shop/ProductPicker';
 
@@ -85,6 +85,17 @@ function IngredientProduct({ line, product: p, onPick, buying }: { line?: Basket
   );
 }
 
+function Description({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  const long = text.length > 160;
+  return (
+    <>
+      <p className={`mt-2 text-muted ${long && !open ? 'line-clamp-3' : ''}`}>{text}</p>
+      {long && <button type="button" className="mt-1 text-sm font-bold underline" onClick={() => setOpen(!open)}>{open ? 'Less' : 'More'}</button>}
+    </>
+  );
+}
+
 function RateSheet({ open, onClose, recipeId }: { open: boolean; onClose: () => void; recipeId: string }) {
   const [stars, setStars] = useState<number | null>(null);
   const [note, setNote] = useState('');
@@ -125,7 +136,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
   const household = useHousehold();
   const navigate = useNavigate();
   const goBack = useGoBack();
-  const { toast, confirm } = useFeedback();
+  const { toast } = useFeedback();
   const [servings, setServings] = useState(recipe.servings);
   const [planOpen, setPlanOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
@@ -163,16 +174,11 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
       }
     } catch { /* share cancelled */ }
   };
+  const saved = book ? inCookbook(book) : false;
+  // The heart is the cookbook: on means it's in, off takes it out. Always undoable.
   const toggleSaved = async () => {
-    if (!book?.saved) {
-      await patchCookbook(recipe.id, { saved: true, archived: false });
-      toast('Saved to your cookbook.', { label: 'Undo', run: () => void patchCookbook(recipe.id, { saved: false }) });
-      return;
-    }
-    const ok = await confirm({ title: 'Archive this recipe?', body: 'It leaves your cookbook but stays in the archive.', confirmLabel: 'Archive' });
-    if (!ok) return;
-    await patchCookbook(recipe.id, { archived: true, saved: false });
-    toast('Archived.', { label: 'Undo', run: () => void patchCookbook(recipe.id, { archived: false, saved: true }) });
+    const prev = await setInCookbook(recipe.id, !saved);
+    toast(saved ? 'Removed from your cookbook.' : 'Saved to your cookbook.', { label: 'Undo', run: () => void restoreCookbookRow(recipe.id, prev) });
   };
   const editCopy = async () => {
     if (recipe.userOwned) return navigate(`/recipe/${recipe.id}/edit`);
@@ -188,7 +194,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
         <RecipeImage id={recipe.id} title={recipe.title} src={recipe.image?.url ?? null} className="h-72 w-full md:h-96" large />
         <IconButton icon={ArrowLeft} label="Back" className="absolute left-4 top-3 z-20 shadow-lg" onClick={goBack} />
         <div className="absolute right-4 top-3 z-20 flex gap-2">
-          <IconButton icon={Heart} label={book?.favourite ? 'Remove favourite' : 'Favourite'} aria-pressed={Boolean(book?.favourite)} variant={book?.favourite ? 'hot' : 'white'} className="shadow-lg" onClick={() => void patchCookbook(recipe.id, { favourite: !book?.favourite, saved: true })} />
+          <IconButton icon={Heart} label={saved ? 'Remove from cookbook' : 'Save to cookbook'} aria-pressed={saved} variant={saved ? 'hot' : 'white'} filled={saved} className="shadow-lg" data-testid="cookbook-heart" onClick={() => void toggleSaved()} />
           <IconButton icon={FolderPlus} label="Add to collection" className="shadow-lg" onClick={() => setCollectionsOpen(true)} />
         </div>
       </div>
@@ -203,7 +209,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
           {recipe.dietary.map((d) => <Tag key={d}>{d}</Tag>)}
         </div>
         <h1 className="display text-[2.1rem] leading-[1.05]" data-testid="recipe-title">{recipe.title}</h1>
-        {recipe.description && <p className="mt-2 text-muted">{recipe.description}</p>}
+        {recipe.description && <Description text={recipe.description} />}
 
         <dl className="mt-4 grid grid-cols-4 gap-2 text-center">
           {[
@@ -213,8 +219,9 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
             ['Cost', basket && reliable && basket.totals.pricedLines ? `~${formatMoney(basket.totals.valueCents)}` : '—'],
           ].map(([k, v]) => <div key={k} className="rounded-2xl bg-white p-2 shadow-[var(--shadow-card)]"><dt className="text-[11px] font-bold text-muted">{k}</dt><dd className="font-extrabold tabular-nums">{v}</dd></div>)}
         </dl>
-        {recipe.timeEstimated && recipe.totalMinutes != null && <p className="mt-1 text-xs text-muted">Times are estimates from the steps. The source didn't state them.</p>}
-        {reliable && basket && <p className="mt-1 text-xs text-muted">Cost is the value of what's used, from stored Woolworths prices. It's an estimate.</p>}
+        {((recipe.timeEstimated && recipe.totalMinutes != null) || (reliable && basket)) && (
+          <p className="mt-1 text-xs text-muted">~ means an estimate.{recipe.timeEstimated && recipe.totalMinutes != null ? ' Times are worked out from the steps.' : ''}{reliable && basket ? ' Cost is what you use, at stored Woolworths prices.' : ''}</p>
+        )}
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           {recipe.steps.length > 0 && <Button size="lg" icon={Play} variant="hot" className="col-span-2" onClick={() => navigate(`/recipe/${recipe.id}/cook`)} data-testid="start-cooking">{session ? 'Resume cooking' : 'Start cooking'}</Button>}
@@ -223,9 +230,8 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
           )}
           {reliable && <Button icon={CalendarPlus} data-testid="add-to-plan" onClick={() => setPlanOpen(true)}>Add to plan</Button>}
           {reliable && <Button icon={ShoppingBasket} variant="lime" data-testid="add-to-list" onClick={() => void addToList()}>Add to list</Button>}
-          <Button variant="white" icon={book?.saved ? Archive : Heart} data-testid="save-recipe" onClick={() => void toggleSaved()}>{book?.saved ? 'Archive' : 'Save recipe'}</Button>
-          <Button variant="white" icon={Share2} onClick={() => void share()}>Share link</Button>
-          <ShareWithFamilyButton recipe={recipe} />
+          <Button variant={saved ? 'hot' : 'white'} icon={Heart} aria-pressed={saved} data-testid="save-recipe" onClick={() => void toggleSaved()}>{saved ? 'In cookbook' : 'Save to cookbook'}</Button>
+          <ShareButton recipe={recipe} onShareLink={() => void share()} />
           <PublishButton recipe={recipe} />
           {reliable && <Button variant="white" icon={Pencil} onClick={() => void editCopy()}>{recipe.userOwned ? 'Edit recipe' : 'Edit my copy'}</Button>}
           {reliable && <Button variant="white" icon={Star} onClick={() => setRateOpen(true)}>Rate / note</Button>}
@@ -310,8 +316,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
           })}
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Chip active={book?.familyFavourite} onClick={() => void patchCookbook(recipe.id, { saved: true, familyFavourite: !book?.familyFavourite })}>Family favourite</Chip>
-          <Chip active={book?.wantToTry} onClick={() => void patchCookbook(recipe.id, { wantToTry: !book?.wantToTry })}>Want to try</Chip>
+          <Chip active={book?.wantToTry} onClick={() => void patchCookbook(recipe.id, { saved: true, archived: false, wantToTry: !book?.wantToTry })}>To try</Chip>
         </div>
       </Sheet>
       {pickerLine && <ProductPicker open onClose={() => setPicker(null)} lineKey={pickerLine.key} canonicalId={pickerLine.canonicalId} name={pickerLine.name} ctx={ctx} list={data?.list ?? []} currentId={pickerLine.plan?.lines[0]?.productId} />}

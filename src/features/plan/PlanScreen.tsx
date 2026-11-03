@@ -8,7 +8,7 @@ import { getRecipes } from '../../data/catalog';
 import { proposePlan, type PlanProposal, type PlanStrategy } from '../../domain/planner';
 import { formatMoney } from '../../domain/pricing';
 import type { MealSlot, RecipeSummary } from '../../domain/types';
-import { activeSession, addDays, db, isoDate, weekStartOf, type MealEntryRow } from '../../state/db';
+import { activeSession, addDays, db, inCookbook, isoDate, weekStartOf, type MealEntryRow } from '../../state/db';
 import { useBasket, useCatalogIndex, useHousehold } from '../../state/hooks';
 import { DAY_NAMES } from './AddToPlanSheet';
 import { addMeal, duplicateMeal, moveMeal } from './planActions';
@@ -60,7 +60,7 @@ export function PlanScreen() {
   const navigate = useNavigate();
   const { toast } = useFeedback();
   const meals = useLiveQuery(() => db.meals.where('weekStart').equals(week).toArray(), [week]);
-  const cookbook = useLiveQuery(() => db.cookbook.filter((c) => c.saved && !c.archived).toArray(), []);
+  const cookbook = useLiveQuery(() => db.cookbook.filter(inCookbook).toArray(), []);
   const ratings = useLiveQuery(() => db.ratings.toArray(), []);
   const swipes = useLiveQuery(() => db.swipes.toArray(), []);
   const [addTo, setAddTo] = useState<{ day: number; slot: MealSlot } | null>(null);

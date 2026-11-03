@@ -158,9 +158,18 @@ test('adding to the list, the plan and the cookbook can all be undone', async ({
 
   await page.goto(`./#/recipe/${r.id}`);
   await page.getByTestId('save-recipe').click();
-  await expect(page.getByTestId('save-recipe')).toHaveText('Archive');
+  await expect(page.getByTestId('save-recipe')).toHaveText('In cookbook');
+  await expect(page.getByTestId('cookbook-heart')).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Undo' }).click();
-  await expect(page.getByTestId('save-recipe')).toHaveText('Save recipe');
+  await expect(page.getByTestId('save-recipe')).toHaveText('Save to cookbook');
+  // Removing from the cookbook list is one tap on the heart, with undo.
+  await page.getByTestId('cookbook-heart').click();
+  await page.goto('./#/cookbook');
+  await expect(page.getByTestId('cookbook-item')).toHaveCount(1);
+  await page.getByTestId('cookbook-item').getByRole('button', { name: /^Remove .* from cookbook$/ }).click();
+  await expect(page.getByTestId('cookbook-item')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByTestId('cookbook-item')).toHaveCount(1);
 });
 
 test('Back on a recipe opened directly goes to the cookbook', async ({ page }) => {

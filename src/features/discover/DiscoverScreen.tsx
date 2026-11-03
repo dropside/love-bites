@@ -6,7 +6,7 @@ import { Button, Empty, ErrorState, IconButton, inputClass, selectClass, Skeleto
 import { loadMatchIds } from '../../data/catalog';
 import { activeFilterCount, applyFilters, applySort, availabilityScore, emptyFilters, orderMeals, profileFrom, rankDeck, titleMatchesFirst, type DiscoverFilters } from '../../domain/ranking';
 import type { RecipeSummary } from '../../domain/types';
-import { db, weekStartOf } from '../../state/db';
+import { db, inCookbook, weekStartOf } from '../../state/db';
 import { useCatalogIndex, useHousehold } from '../../state/hooks';
 import { FilterSheet } from './FilterSheet';
 import { RecipeList } from './RecipeList';
@@ -19,7 +19,7 @@ export function DiscoverScreen() {
   const swipes = useLiveQuery(() => db.swipes.toArray(), []);
   const pantry = useLiveQuery(() => db.pantry.toArray(), []);
   const weekMeals = useLiveQuery(() => db.meals.where('weekStart').equals(weekStartOf()).toArray(), []);
-  const saved = useLiveQuery(() => db.cookbook.filter((c) => c.saved && !c.archived).count(), []);
+  const saved = useLiveQuery(() => db.cookbook.filter(inCookbook).count(), []);
   const lastSwipe = useLiveQuery(() => db.settings.get('lastSwipe'), []);
   const [filters, setFilters] = useState<DiscoverFilters>(() => {
     try {
@@ -96,7 +96,7 @@ export function DiscoverScreen() {
     await recordSwipe(r.id, action);
     const undo = { label: 'Undo', run: () => void undoLastSwipe() };
     if (action === 'love') toast('In the cookbook. Good taste.', view === 'list' ? undo : undefined);
-    if (action === 'save') toast('Saved for later.', view === 'list' ? undo : undefined);
+    if (action === 'save') toast('In your cookbook, under To try.', view === 'list' ? undo : undefined);
     if (++swipedCount.current % 12 === 0) setEpoch((e) => e + 1);
   };
 

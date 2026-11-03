@@ -12,7 +12,7 @@ export async function recordSwipe(recipeId: string, action: SwipeAction): Promis
       await db.cookbook.put({ ...row, saved: true, archived: false, wantToTry: false });
     } else if (action === 'save') {
       const row: CookbookRow = prevBook ?? emptyCookbookRow(recipeId);
-      await db.cookbook.put({ ...row, wantToTry: true, archived: false });
+      await db.cookbook.put({ ...row, saved: true, wantToTry: true, archived: false });
     }
   });
 }

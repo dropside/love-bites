@@ -197,6 +197,22 @@ export async function saveHousehold(patch: Partial<Household>) {
   await db.settings.put({ key: 'household', value: { ...current, ...patch } });
 }
 
+/** The one rule for "in my cookbook": saved by a heart, a right swipe, or "save for later", and not removed. */
+export const inCookbook = (c: Pick<CookbookRow, 'saved' | 'wantToTry' | 'favourite' | 'archived'>) => (c.saved || c.wantToTry || c.favourite) && !c.archived;
+
+/** Add or remove a recipe. Returns the previous row so the change can be undone exactly. */
+export async function setInCookbook(recipeId: string, on: boolean): Promise<CookbookRow | null> {
+  const prev = (await db.cookbook.get(recipeId)) ?? null;
+  const row = prev ?? emptyCookbookRow(recipeId);
+  await db.cookbook.put(on ? { ...row, saved: true, archived: false } : { ...row, saved: false, wantToTry: false, favourite: false, familyFavourite: false, archived: false });
+  return prev;
+}
+
+export async function restoreCookbookRow(recipeId: string, prev: CookbookRow | null) {
+  if (prev) await db.cookbook.put(prev);
+  else await db.cookbook.delete(recipeId);
+}
+
 /** Staples Ren has said she's out of: bought this shop instead of assumed at home. Cleared when a shop is finished. */
 export async function setBuyStaple(canonicalId: string, buy: boolean) {
   const row = await db.settings.get('buyStaples');

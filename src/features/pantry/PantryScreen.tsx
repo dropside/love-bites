@@ -7,7 +7,7 @@ import { CANONICAL_INGREDIENTS } from '../../domain/canonicalData';
 import { getCanonical, resolveCanonical } from '../../domain/ingredients';
 import type { Dim, RecipeSummary } from '../../domain/types';
 import { formatQuantity } from '../../domain/units';
-import { db, uid, type PantryLocation, type PantryRow } from '../../state/db';
+import { db, inCookbook, uid, type PantryLocation, type PantryRow } from '../../state/db';
 import { useCatalogIndex, useHousehold } from '../../state/hooks';
 import { undoLog } from './pantryActions';
 
@@ -67,7 +67,7 @@ type Idea = 'now' | 'almost' | 'first' | 'waste';
 export function PantryScreen() {
   const pantry = useLiveQuery(() => db.pantry.toArray(), []);
   const logs = useLiveQuery(() => db.pantryLog.orderBy('at').reverse().limit(5).toArray(), []);
-  const cookbook = useLiveQuery(() => db.cookbook.filter((c) => c.saved && !c.archived).toArray(), []);
+  const cookbook = useLiveQuery(() => db.cookbook.filter(inCookbook).toArray(), []);
   const { index } = useCatalogIndex();
   const household = useHousehold();
   const [editing, setEditing] = useState<Partial<PantryRow> | null>(null);

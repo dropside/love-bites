@@ -26,10 +26,10 @@ export function Button({ variant = 'ink', size = 'md', icon: Icon, children, cla
   );
 }
 
-export function IconButton({ icon: Icon, label, variant = 'white', size = 44, className, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { icon: LucideIcon; label: string; variant?: Variant; size?: number }) {
+export function IconButton({ icon: Icon, label, variant = 'white', size = 44, filled, className, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { icon: LucideIcon; label: string; variant?: Variant; size?: number; filled?: boolean }) {
   return (
     <button type="button" aria-label={label} title={label} style={{ width: size, height: size }} className={cx('inline-flex shrink-0 items-center justify-center rounded-full transition active:scale-95 disabled:opacity-40', VARIANTS[variant], className)} {...rest}>
-      <Icon size={Math.round(size * 0.45)} aria-hidden />
+      <Icon size={Math.round(size * 0.45)} fill={filled ? 'currentColor' : 'none'} aria-hidden />
     </button>
   );
 }

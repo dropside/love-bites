@@ -1,7 +1,7 @@
 // Keeps each person's data in the cloud and brings it to any phone they sign in on.
 // Rows from the cloud are merged in; anything already on this device wins, so nothing local is lost.
 import { exportBackup, restoreBackup, validateBackup } from '../state/backup';
-import { db } from '../state/db';
+import { db, inCookbook } from '../state/db';
 import { cloud, liveUserId } from './client';
 
 let lastPushed = '';
@@ -48,7 +48,7 @@ export async function pushToCloud(): Promise<'saved' | 'unchanged' | 'offline'> 
 
 async function syncLoves(uid: string) {
   const c = cloud()!;
-  const loved = (await db.cookbook.toArray()).filter((r) => (r.saved || r.favourite) && !r.archived).map((r) => r.recipeId).sort();
+  const loved = (await db.cookbook.toArray()).filter(inCookbook).map((r) => r.recipeId).sort();
   const print = loved.join('|');
   if (print === lastLoves) return;
   const { data, error } = await c.from('family_loves').select('recipe_id').eq('user_id', uid);

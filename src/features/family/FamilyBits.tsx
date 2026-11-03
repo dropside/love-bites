@@ -1,4 +1,4 @@
-import { Globe, Heart, Trash2, Users } from 'lucide-react';
+import { Globe, Heart, Link2, Share2, Trash2, Users } from 'lucide-react';
 import { publishRecipe, unpublishRecipe, useCommunityRecipes, useIsContributor } from '../../cloud/community';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,12 +17,13 @@ export function LovedBy({ recipeId }: { recipeId: string }) {
   return <span data-testid="loved-by"><Tag tone="gum" className="whitespace-normal"><Heart size={11} fill="currentColor" aria-hidden /> Loved by {list}</Tag></span>;
 }
 
-export function ShareWithFamilyButton({ recipe }: { recipe: Recipe }) {
+/** One Share button: send it to the family with a note, or send a link anywhere. */
+export function ShareButton({ recipe, onShareLink }: { recipe: Recipe; onShareLink: () => void }) {
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const { toast } = useFeedback();
-  if (!cloudEnabled()) return null;
+  if (!cloudEnabled()) return <Button variant="white" icon={Share2} onClick={onShareLink}>Share</Button>;
   const send = async () => {
     setBusy(true);
     const ok = await shareRecipe(recipe, note);
@@ -35,11 +36,13 @@ export function ShareWithFamilyButton({ recipe }: { recipe: Recipe }) {
   };
   return (
     <>
-      <Button variant="white" icon={Users} data-testid="share-family" onClick={() => setOpen(true)}>Share with family</Button>
-      <Sheet open={open} onClose={() => setOpen(false)} title="Share with family" footer={<Button className="mb-1 w-full" data-testid="share-family-send" disabled={busy} onClick={() => void send()}>{busy ? 'Sharing…' : 'Share'}</Button>}>
-        <p className="mb-2 text-sm">Everyone in the family sees {recipe.title} in their cookbook under From family.</p>
+      <Button variant="white" icon={Share2} data-testid="share-family" onClick={() => setOpen(true)}>Share</Button>
+      <Sheet open={open} onClose={() => setOpen(false)} title="Share">
+        <p className="mb-2 text-sm">Send it to the family. It shows in their cookbook under From family.</p>
         <label htmlFor="share-note" className="mb-1 block text-sm font-bold">Add a note (optional)</label>
         <textarea id="share-note" rows={3} maxLength={280} placeholder="Made this last night, so good with extra garlic" className="w-full rounded-2xl border border-line p-3 text-base" value={note} onChange={(e) => setNote(e.target.value)} />
+        <Button className="mt-3 w-full" icon={Users} data-testid="share-family-send" disabled={busy} onClick={() => void send()}>{busy ? 'Sharing…' : 'Share with family'}</Button>
+        <Button variant="ghost" className="mt-2 w-full" icon={Link2} onClick={() => { setOpen(false); onShareLink(); }}>Send a link instead</Button>
       </Sheet>
     </>
   );

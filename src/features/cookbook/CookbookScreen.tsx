@@ -4,13 +4,13 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { RecipeRow } from '../../components/RecipeBits';
 import { Button, Chip, Empty, IconButton, inputClass, selectClass, Sheet, Skeleton, Tag, useFeedback } from '../../components/ui';
-import { db, patchCookbook, uid, type CollectionRow, type CookbookRow } from '../../state/db';
+import { db, inCookbook, restoreCookbookRow, setInCookbook, uid, type CollectionRow, type CookbookRow } from '../../state/db';
 import { useCatalogIndex } from '../../state/hooks';
 import { cloudEnabled } from '../../cloud/client';
 import { FamilyShelf } from '../family/FamilyBits';
 
 const STARTERS = ['Quick dinners', 'Comfort food', "Kids' favourites", 'Budget meals', 'Baking', 'Weekend cooking', 'Thermomix favourites'];
-type Shelf = 'all' | 'shared' | 'fav' | 'try' | 'recent' | 'family' | 'archived';
+type Shelf = 'all' | 'shared' | 'try' | 'top' | 'recent';
 type Sort = 'added' | 'az' | 'rating' | 'time' | 'cost';
 
 function CollectionsSheet({ open, onClose, collections }: { open: boolean; onClose: () => void; collections: CollectionRow[] }) {
@@ -49,6 +49,7 @@ function CollectionsSheet({ open, onClose, collections }: { open: boolean; onClo
 
 export function CookbookScreen() {
   const { index } = useCatalogIndex();
+  const { toast } = useFeedback();
   const rows = useLiveQuery(() => db.cookbook.toArray(), []);
   const collections = useLiveQuery(() => db.collections.toArray(), []) ?? [];
   const ratings = useLiveQuery(() => db.ratings.toArray(), []);
@@ -72,13 +73,12 @@ export function CookbookScreen() {
   }, [ratings]);
 
   const pass = (c: CookbookRow) => {
-    if (shelf === 'archived') return c.archived;
-    if (c.archived) return false;
-    if (shelf === 'fav') return c.favourite;
-    if (shelf === 'try') return c.wantToTry;
+    if (!inCookbook(c)) return false;
+    if (shelf === 'try') return c.wantToTry && !c.cookCount;
+    // Top rated comes from your star ratings (older favourite marks still count).
+    if (shelf === 'top') return (stars.get(c.recipeId) ?? 0) >= 4 || c.favourite || c.familyFavourite;
     if (shelf === 'recent') return c.lastCookedAt != null;
-    if (shelf === 'family') return c.familyFavourite;
-    if (shelf === 'all') return c.saved || c.wantToTry;
+    if (shelf === 'all') return true;
     return c.collectionIds.includes(shelf);
   };
 
@@ -103,7 +103,7 @@ export function CookbookScreen() {
   }, [rows, byId, shelf, q, sort, tag, stars, notes]);
 
   const shelves: { id: Shelf; label: string }[] = [
-    { id: 'all', label: 'All' }, ...(cloudEnabled() ? [{ id: 'shared' as const, label: 'From family' }] : []), { id: 'fav', label: 'Favourites' }, { id: 'try', label: 'Want to try' }, { id: 'recent', label: 'Recently cooked' }, { id: 'family', label: 'Family faves' }, { id: 'archived', label: 'Archive' },
+        { id: 'all', label: 'All' }, ...(cloudEnabled() ? [{ id: 'shared' as const, label: 'From family' }] : []), { id: 'try', label: 'To try' }, { id: 'top', label: 'Top rated' }, { id: 'recent', label: 'Cooked' },
   ];
 
   return (
@@ -131,7 +131,7 @@ export function CookbookScreen() {
       {shelf === 'shared' && index && <FamilyShelf byId={byId} />}
       {shelf !== 'shared' && index && rows && !list.length && (
         <Empty title={rows.length ? 'Nothing on this shelf.' : 'Still blank. Very punk.'} action={<Link to="/"><Button icon={Heart}>Go find some food</Button></Link>}>
-          Swipe right on recipes you love and they'll live here.
+          {shelf === 'top' ? 'Rate a recipe 4 or 5 stars after cooking it and it shows up here.' : shelf === 'try' ? 'Recipes you save for later in Discover wait here until you cook them.' : shelf === 'recent' ? 'Recipes you cook show up here.' : 'Tap the heart on any recipe, or swipe right, and it lives here.'}
         </Empty>
       )}
       <ul className="grid gap-3 md:grid-cols-2">
@@ -142,11 +142,11 @@ export function CookbookScreen() {
               sub={
                 <div className="mt-1 flex flex-wrap items-center gap-1">
                   {stars.get(r.id) && <Tag tone="lime"><Star size={11} fill="currentColor" aria-hidden /> {stars.get(r.id)}</Tag>}
-                  {c.wantToTry && <Tag>To try</Tag>}
+                  {c.wantToTry && !c.cookCount && <Tag>To try</Tag>}
                   {notes.get(r.id) && <span className="marker line-clamp-1 text-sm text-deep">“{notes.get(r.id)}”</span>}
                 </div>
               }
-              right={<IconButton icon={Heart} label={c.favourite ? `Unfavourite ${r.title}` : `Favourite ${r.title}`} variant={c.favourite ? 'hot' : 'ghost'} aria-pressed={c.favourite} onClick={() => void patchCookbook(r.id, { favourite: !c.favourite })} />}
+              right={<IconButton icon={Heart} label={`Remove ${r.title} from cookbook`} variant="hot" filled aria-pressed onClick={() => void setInCookbook(r.id, false).then((prev) => toast(`Removed ${r.title}.`, { label: 'Undo', run: () => void restoreCookbookRow(r.id, prev) }))} />}
             />
           </li>
         ))}
