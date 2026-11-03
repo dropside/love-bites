@@ -23,7 +23,13 @@ export function SignInScreen({ onSignedIn }: { onSignedIn: () => void }) {
     e.preventDefault();
     setBusy(true);
     setError('');
-    const { data, error: err } = await c.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+    const typed = email.trim().toLowerCase();
+    let { data, error: err } = await c.auth.signInWithPassword({ email: typed, password });
+    // Gmail ignores dots, so "jk.taylor" and "jktaylor" are the same inbox. Supabase doesn't, so try the dotless form too.
+    const [local, domain] = typed.split('@');
+    if (err && /^(gmail|googlemail)\.com$/.test(domain ?? '') && local.includes('.')) {
+      ({ data, error: err } = await c.auth.signInWithPassword({ email: `${local.replace(/\./g, '')}@${domain}`, password }));
+    }
     if (err || !data.user) {
       setBusy(false);
       setError(err && /fetch|network/i.test(err.message) ? "Can't reach the kitchen. Check you're online and try again." : "That email and password don't match. Ask Louie if you're stuck.");

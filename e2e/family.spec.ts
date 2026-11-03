@@ -2,7 +2,7 @@ import { expect, test, type BrowserContext, type Page, type Route } from '@playw
 
 // A small in-memory stand-in for Supabase: enough of auth and the REST API to run two family members.
 const API = 'https://cloud.test';
-const FAMILY: Record<string, string> = { 'ren@example.com': 'u-ren', 'katie@example.com': 'u-katie' };
+const FAMILY: Record<string, string> = { 'ren@example.com': 'u-ren', 'katie@example.com': 'u-katie', 'jktaylor@gmail.com': 'u-gmail' };
 type Row = Record<string, unknown>;
 const store: Record<string, Row[]> = { profiles: [], user_state: [], family_shares: [], family_loves: [], contributors: [{ user_id: 'u-ren' }], community_recipes: [] };
 const KEYS: Record<string, string[]> = { profiles: ['id'], user_state: ['user_id'], family_loves: ['user_id', 'recipe_id'], family_shares: ['id'], contributors: ['user_id'], community_recipes: ['id'] };
@@ -167,4 +167,9 @@ test('contributors add their imported recipes to Love Bites for everyone; others
   await katie.getByTestId('import-paste-save').click();
   await expect(katie.getByTestId('recipe-title')).toHaveText('Katie’s lemon slice');
   await expect(katie.getByTestId('publish')).toHaveCount(0);
+});
+
+test('a Gmail address signs in with or without dots', async ({ browser }) => {
+  const page = await phone(await browser.newContext());
+  await signIn(page, 'jk.taylor@gmail.com', 'Katie');
 });
