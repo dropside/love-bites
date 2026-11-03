@@ -1,5 +1,5 @@
 // The Love Bites design system: small reusable pieces shared by every screen.
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from 'motion/react';
 import { Check, Minus, Plus, X, type LucideIcon } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
@@ -166,10 +166,12 @@ export function Sheet({ open, onClose, title, children, footer }: { open: boolea
 }
 
 // ---- Confirm dialog + toast
-interface ToastItem { id: number; text: string; action?: { label: string; run: () => void }; }
+interface ToastAction { label: string; run: () => void; }
+interface ToastItem { id: number; text: string; actions: ToastAction[]; }
 interface ConfirmOptions { title: string; body?: string; confirmLabel?: string; danger?: boolean; }
 interface FeedbackApi {
-  toast: (text: string, action?: ToastItem['action']) => void;
+  /** Up to two buttons, e.g. Undo and See list. */
+  toast: (text: string, ...actions: (ToastAction | undefined)[]) => void;
   confirm: (o: ConfirmOptions) => Promise<boolean>;
 }
 const FeedbackContext = createContext<FeedbackApi | null>(null);
@@ -179,14 +181,30 @@ export const useFeedback = () => {
   return ctx;
 };
 
+/** A toast that's on its way out can't be tapped, so Undo never reverses the wrong thing. */
+function ToastView({ t, onDone }: { t: ToastItem; onDone: () => void }) {
+  const present = useIsPresent();
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} aria-hidden={!present || undefined} className={cx('flex max-w-sm items-center gap-3 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-pop)]', t.actions.length > 0 && present && 'pointer-events-auto')}>
+      <span>{t.text}</span>
+      {t.actions.map((a) => (
+        <button key={a.label} type="button" disabled={!present} className="shrink-0 font-extrabold text-lime underline" onClick={() => { a.run(); onDone(); }}>
+          {a.label}
+        </button>
+      ))}
+    </motion.div>
+  );
+}
+
 export function FeedbackProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [dialog, setDialog] = useState<(ConfirmOptions & { resolve: (b: boolean) => void }) | null>(null);
   const next = useRef(1);
-  const toast = useCallback<FeedbackApi['toast']>((text, action) => {
+  const toast = useCallback<FeedbackApi['toast']>((text, ...maybe) => {
     const id = next.current++;
-    setToasts([{ id, text, action }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), action ? 6000 : 3000);
+    const actions = maybe.filter((a): a is ToastAction => Boolean(a));
+    setToasts([{ id, text, actions }]);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), actions.length ? 7000 : 3000);
   }, []);
   const confirm = useCallback<FeedbackApi['confirm']>((o) => new Promise((resolve) => setDialog({ ...o, resolve })), []);
   const api = useMemo(() => ({ toast, confirm }), [toast, confirm]);
@@ -197,17 +215,10 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   return (
     <FeedbackContext.Provider value={api}>
       {children}
-      <div aria-live="polite" className={cx('pointer-events-none fixed inset-x-0 z-[60] flex flex-col items-center gap-2 px-4', toasts[0]?.action ? 'bottom-24' : 'top-16')}>
+      <div aria-live="polite" className={cx('pointer-events-none fixed inset-x-0 z-[60] flex flex-col items-center gap-2 px-4', toasts[0]?.actions.length ? 'bottom-24' : 'top-16')}>
         <AnimatePresence>
           {toasts.map((t) => (
-            <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} className={cx('flex max-w-sm items-center gap-3 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-pop)]', t.action && 'pointer-events-auto')}>
-              <span>{t.text}</span>
-              {t.action && (
-                <button type="button" className="font-extrabold text-lime underline" onClick={() => { t.action!.run(); setToasts((x) => x.filter((y) => y.id !== t.id)); }}>
-                  {t.action.label}
-                </button>
-              )}
-            </motion.div>
+            <ToastView key={t.id} t={t} onDone={() => setToasts((x) => x.filter((y) => y.id !== t.id))} />
           ))}
         </AnimatePresence>
       </div>

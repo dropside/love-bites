@@ -4,6 +4,7 @@ import { Button, Field, inputClass, Skeleton, Stepper, useFeedback } from '../..
 import { parseIngredientLine } from '../../domain/ingredients';
 import type { Recipe, ThermomixSettings } from '../../domain/types';
 import { db, patchCookbook, uid } from '../../state/db';
+import { useGoBack } from '../../state/hooks';
 import { extractTimers } from './recipeUtils';
 
 interface StepDraft { text: string; tm: { temp: string; time: string; speed: string; reverse: boolean } | null; }
@@ -22,6 +23,7 @@ export default function RecipeEditor() {
   const { id } = useParams();
   const isNew = id === 'new';
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const { toast } = useFeedback();
   const [form, setForm] = useState<ReturnType<typeof toDraft> | null>(isNew ? toDraft(null) : null);
   const [original, setOriginal] = useState<Recipe | null>(null);
@@ -97,7 +99,7 @@ export default function RecipeEditor() {
         <Button variant="ghost" size="sm" onClick={() => set({ steps: [...form.steps, { text: '', tm: null }] })}>Add a step</Button>
       </section>
       <div className="flex gap-2 pt-2">
-        <Button variant="ghost" className="flex-1" onClick={() => navigate(-1)}>Cancel</Button>
+        <Button variant="ghost" className="flex-1" onClick={goBack}>Cancel</Button>
         <Button className="flex-1" data-testid="save-recipe-edit" disabled={!form.title.trim()} onClick={() => void save()}>Save</Button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, Chip, Field, selectClass, Sheet, Stepper, useFeedback } from '../../components/ui';
 import type { MealSlot } from '../../domain/types';
-import { addDays, weekStartOf } from '../../state/db';
+import { addDays, db, weekStartOf } from '../../state/db';
 import { useHousehold } from '../../state/hooks';
 import { addMeal } from './planActions';
 
@@ -22,7 +22,7 @@ export function AddToPlanSheet({ open, onClose, recipeId, servings }: { open: bo
       open={open}
       onClose={onClose}
       title="Add to plan"
-      footer={<Button className="mb-1 w-full" data-testid="confirm-add-plan" onClick={() => { void addMeal(week, day, slot, recipeId, count); toast(`On the plan for ${DAY_NAMES[day]}.`); onClose(); }}>Add it</Button>}
+      footer={<Button className="mb-1 w-full" data-testid="confirm-add-plan" onClick={() => { void addMeal(week, day, slot, recipeId, count).then((id) => toast(`On the plan for ${DAY_NAMES[day]}.`, { label: 'Undo', run: () => void db.meals.delete(id) })); onClose(); }}>Add it</Button>}
     >
       <div className="space-y-4">
         <Field label="Week">

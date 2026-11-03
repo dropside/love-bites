@@ -39,6 +39,7 @@ function Row({ row, sessionId, onOpen }: { row: ShopRow; sessionId: string; onOp
 
 function ItemSheet({ row, sessionId, onClose, onChangeProduct }: { row: ShopRow | null; sessionId: string; onClose: () => void; onChangeProduct: () => void }) {
   const [actual, setActual] = useState('');
+  const { toast } = useFeedback();
   if (!row) return null;
   const l = row.line;
   return (
@@ -78,7 +79,7 @@ function ItemSheet({ row, sessionId, onClose, onChangeProduct }: { row: ShopRow 
         </Field>
         <div className="flex gap-2">
           <Button variant={row.unavailable ? 'lime' : 'ghost'} className="flex-1" onClick={() => void patchLine(sessionId, row.key, { unavailable: !row.unavailable })}>{row.unavailable ? 'Available again' : 'Not on the shelf'}</Button>
-          <Button variant="ghost" className="flex-1" icon={Trash2} onClick={() => { void patchLine(sessionId, row.key, { removed: true }); onClose(); }}>Remove</Button>
+          <Button variant="ghost" className="flex-1" icon={Trash2} onClick={() => { void patchLine(sessionId, row.key, { removed: true }).then(() => toast(`Removed ${row.line.name.toLowerCase()}.`, { label: 'Undo', run: () => void patchLine(sessionId, row.key, { removed: false }) })); onClose(); }}>Remove</Button>
         </div>
       </div>
     </Sheet>
@@ -174,7 +175,7 @@ export function ShopScreen() {
                       <li key={m.id} className={`flex items-center gap-3 py-3 ${m.checked ? 'opacity-50' : ''}`}>
                         <Checkbox checked={m.checked} label={`Got ${m.name}`} onChange={(c) => void db.manualItems.update(m.id, { checked: c, checkedAt: c ? Date.now() : null })} />
                         <p className={`flex-1 font-bold ${m.checked ? 'line-through' : ''}`}>{m.name}</p>
-                        <IconButton icon={Trash2} label={`Remove ${m.name}`} variant="ghost" size={40} onClick={() => void db.manualItems.delete(m.id)} />
+                        <IconButton icon={Trash2} label={`Remove ${m.name}`} variant="ghost" size={40} onClick={() => void db.manualItems.delete(m.id).then(() => toast(`Removed ${m.name}.`, { label: 'Undo', run: () => void db.manualItems.put(m) }))} />
                       </li>
                     ))}
                   </ul>

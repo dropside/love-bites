@@ -32,7 +32,7 @@ export default function ImportScreen() {
     const row = toRecipe(input);
     await db.userRecipes.put(row);
     await patchCookbook(row.id, { saved: true });
-    toast('Imported and saved to your cookbook.');
+    toast('Imported and saved to your cookbook.', { label: 'Undo', run: () => void db.userRecipes.delete(row.id).then(() => db.cookbook.delete(row.id)).then(() => navigate('/import')) });
     navigate(`/recipe/${row.id}`);
   };
 

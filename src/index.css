@@ -49,7 +49,7 @@
   .skeleton { background: linear-gradient(100deg, #fbe7f2 30%, #fff3fa 50%, #fbe7f2 70%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
 
   /* Poster fallback when a recipe has no licensed photo: nothing is ever hotlinked without rights. */
-  .poster { background: var(--color-pop); position: relative; overflow: hidden; }
+  .poster { background: var(--color-pop); position: relative; overflow: hidden; isolation: isolate; }
   .poster::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 15% 20%, var(--color-hot) 0 11%, transparent 11.5%), radial-gradient(circle at 88% 78%, var(--color-gum) 0 22%, transparent 22.5%), radial-gradient(circle at 80% 12%, var(--color-lime) 0 7%, transparent 7.5%); }
   .poster.alt { background: var(--color-lime); }
   .poster.alt::before { background: radial-gradient(circle at 85% 18%, var(--color-pop) 0 16%, transparent 16.5%), radial-gradient(circle at 10% 85%, var(--color-ink) 0 7%, transparent 7.5%); }

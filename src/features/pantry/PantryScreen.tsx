@@ -15,7 +15,7 @@ const LOCATIONS: PantryLocation[] = ['pantry', 'fridge', 'freezer'];
 const DAY = 86_400_000;
 
 function EditSheet({ item, onClose }: { item: Partial<PantryRow> | null; onClose: () => void }) {
-  const { confirm } = useFeedback();
+  const { confirm, toast } = useFeedback();
   const [name, setName] = useState(item?.name ?? '');
   const [canonicalId, setCanonicalId] = useState<string | null>(item?.canonicalId ?? null);
   const [quantity, setQuantity] = useState(item?.quantity != null ? String(item.quantity) : '');
@@ -55,7 +55,7 @@ function EditSheet({ item, onClose }: { item: Partial<PantryRow> | null; onClose
         </div>
         <label className="flex items-center gap-3 font-bold"><input type="checkbox" className="h-6 w-6 accent-[#19171B]" checked={staple} onChange={(e) => setStaple(e.target.checked)} /> Staple: always assume I have this</label>
         {item?.id && (
-          <Button variant="ghost" className="w-full" onClick={() => { void confirm({ title: `Remove ${name}?`, danger: true, confirmLabel: 'Remove' }).then((ok) => { if (ok) { void db.pantry.delete(item.id!); onClose(); } }); }}>Remove from pantry</Button>
+          <Button variant="ghost" className="w-full" onClick={() => { void confirm({ title: `Remove ${name}?`, danger: true, confirmLabel: 'Remove' }).then((ok) => { if (ok) { const row = item as PantryRow; void db.pantry.delete(row.id).then(() => toast(`Removed ${name}.`, { label: 'Undo', run: () => void db.pantry.put(row) })); onClose(); } }); }}>Remove from pantry</Button>
         )}
       </div>
     </Sheet>

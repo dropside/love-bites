@@ -124,14 +124,15 @@ export function PlanScreen() {
     if (!proposal) return;
     const taken = new Set((meals ?? []).filter((m) => m.slot === 'dinner').map((m) => m.day));
     let day = 0;
+    const added: string[] = [];
     for (const r of proposal.picks) {
       while (taken.has(day) && day < 6) day++;
-      await addMeal(week, day, 'dinner', r.id, household.defaultServings);
+      added.push(await addMeal(week, day, 'dinner', r.id, household.defaultServings));
       taken.add(day);
     }
     setProposal(null);
     setPlanning(false);
-    toast('Week sorted. Check out the plan.');
+    toast('Week sorted. Check out the plan.', { label: 'Undo', run: () => void db.meals.bulkDelete(added) });
   };
 
   const onSlotTap = (day: number, slot: MealSlot) => {
@@ -232,7 +233,7 @@ export function PlanScreen() {
               <Button variant={openMeal.cooked ? 'lime' : 'ghost'} icon={Check} onClick={() => void db.meals.update(openMeal.id, { cooked: !openMeal.cooked })}>{openMeal.cooked ? 'Cooked' : 'Mark cooked'}</Button>
               <Button variant="ghost" icon={Move} onClick={() => { setMoving({ meal: openMeal, copy: false }); setOpen(null); }}>Move</Button>
               <Button variant="ghost" icon={Copy} onClick={() => { setMoving({ meal: openMeal, copy: true }); setOpen(null); }}>Duplicate</Button>
-              <Button variant="ghost" icon={Trash2} onClick={() => { void db.meals.delete(openMeal.id); setOpen(null); }}>Remove</Button>
+              <Button variant="ghost" icon={Trash2} onClick={() => { const meal = openMeal; void db.meals.delete(meal.id).then(() => toast('Removed from the plan.', { label: 'Undo', run: () => void db.meals.put(meal) })); setOpen(null); }}>Remove</Button>
             </div>
           </div>
         </Sheet>

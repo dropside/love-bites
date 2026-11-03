@@ -10,7 +10,7 @@ import type { BasketLine } from '../../domain/basket';
 import type { Product, Recipe, RecipeIngredient } from '../../domain/types';
 import { formatQuantity, fraction } from '../../domain/units';
 import { activeSession, db, patchCookbook, setBuyStaple, uid } from '../../state/db';
-import { useBasket, useBuyStaples, useHousehold, useRecipe } from '../../state/hooks';
+import { useBasket, useBuyStaples, useGoBack, useHousehold, useRecipe } from '../../state/hooks';
 import { LovedBy, PublishButton, ShareWithFamilyButton } from '../family/FamilyBits';
 import { AddToPlanSheet } from '../plan/AddToPlanSheet';
 import { ProductPicker, productSize } from '../shop/ProductPicker';
@@ -124,6 +124,7 @@ function ThermomixNotice({ recipe }: { recipe: Recipe }) {
 function RecipeBody({ recipe }: { recipe: Recipe }) {
   const household = useHousehold();
   const navigate = useNavigate();
+  const goBack = useGoBack();
   const { toast, confirm } = useFeedback();
   const [servings, setServings] = useState(recipe.servings);
   const [planOpen, setPlanOpen] = useState(false);
@@ -148,8 +149,9 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
 
   const addToList = async () => {
     const s = await activeSession();
-    await db.shopExtras.put({ id: uid(), sessionId: s.id, recipeId: recipe.id, title: recipe.title, servings });
-    toast('Ingredients added to your list.', { label: 'See list', run: () => navigate('/shop') });
+    const id = uid();
+    await db.shopExtras.put({ id, sessionId: s.id, recipeId: recipe.id, title: recipe.title, servings });
+    toast('Ingredients added to your list.', { label: 'Undo', run: () => void db.shopExtras.delete(id).then(() => toast('Taken back off the list.')) }, { label: 'See list', run: () => navigate('/shop') });
   };
   const share = async () => {
     const url = recipe.source.url ?? location.href;
@@ -160,6 +162,17 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
         toast('Link copied.');
       }
     } catch { /* share cancelled */ }
+  };
+  const toggleSaved = async () => {
+    if (!book?.saved) {
+      await patchCookbook(recipe.id, { saved: true, archived: false });
+      toast('Saved to your cookbook.', { label: 'Undo', run: () => void patchCookbook(recipe.id, { saved: false }) });
+      return;
+    }
+    const ok = await confirm({ title: 'Archive this recipe?', body: 'It leaves your cookbook but stays in the archive.', confirmLabel: 'Archive' });
+    if (!ok) return;
+    await patchCookbook(recipe.id, { archived: true, saved: false });
+    toast('Archived.', { label: 'Undo', run: () => void patchCookbook(recipe.id, { archived: false, saved: true }) });
   };
   const editCopy = async () => {
     if (recipe.userOwned) return navigate(`/recipe/${recipe.id}/edit`);
@@ -173,8 +186,8 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
     <article>
       <div className="relative -mx-4 -mt-1 md:mx-0 md:overflow-hidden md:rounded-[2rem]">
         <RecipeImage id={recipe.id} title={recipe.title} src={recipe.image?.url ?? null} className="h-72 w-full md:h-96" large />
-        <IconButton icon={ArrowLeft} label="Back" className="absolute left-4 top-3 shadow-lg" onClick={() => navigate(-1)} />
-        <div className="absolute right-4 top-3 flex gap-2">
+        <IconButton icon={ArrowLeft} label="Back" className="absolute left-4 top-3 z-20 shadow-lg" onClick={goBack} />
+        <div className="absolute right-4 top-3 z-20 flex gap-2">
           <IconButton icon={Heart} label={book?.favourite ? 'Remove favourite' : 'Favourite'} aria-pressed={Boolean(book?.favourite)} variant={book?.favourite ? 'hot' : 'white'} className="shadow-lg" onClick={() => void patchCookbook(recipe.id, { favourite: !book?.favourite, saved: true })} />
           <IconButton icon={FolderPlus} label="Add to collection" className="shadow-lg" onClick={() => setCollectionsOpen(true)} />
         </div>
@@ -210,7 +223,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
           )}
           {reliable && <Button icon={CalendarPlus} data-testid="add-to-plan" onClick={() => setPlanOpen(true)}>Add to plan</Button>}
           {reliable && <Button icon={ShoppingBasket} variant="lime" data-testid="add-to-list" onClick={() => void addToList()}>Add to list</Button>}
-          <Button variant="white" icon={book?.saved ? Archive : Heart} data-testid="save-recipe" onClick={() => void (book?.saved ? confirm({ title: 'Archive this recipe?', body: "It leaves your cookbook but stays in the archive.", confirmLabel: 'Archive' }).then((ok) => { if (ok) void patchCookbook(recipe.id, { archived: true, saved: false }); }) : patchCookbook(recipe.id, { saved: true, archived: false }))}>{book?.saved ? 'Archive' : 'Save recipe'}</Button>
+          <Button variant="white" icon={book?.saved ? Archive : Heart} data-testid="save-recipe" onClick={() => void toggleSaved()}>{book?.saved ? 'Archive' : 'Save recipe'}</Button>
           <Button variant="white" icon={Share2} onClick={() => void share()}>Share link</Button>
           <ShareWithFamilyButton recipe={recipe} />
           <PublishButton recipe={recipe} />

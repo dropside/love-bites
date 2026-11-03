@@ -1,6 +1,7 @@
 // React bindings for data: single source of truth for basket and pantry math on every screen.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { buildBasket, type Basket, type BasketContext, type BasketRecipeInput } from '../domain/basket';
 import { scaleIngredient } from '../domain/ingredients';
 import type { Recipe, RecipeSummary } from '../domain/types';
@@ -157,4 +158,10 @@ export function useWakeLock(enabled = true) {
     };
   }, [enabled]);
   return active;
+}
+
+/** Go back within the app, or somewhere sensible when this page was opened first (a link, a reopened app). */
+export function useGoBack(fallback = '/cookbook') {
+  const navigate = useNavigate();
+  return () => ((window.history.state as { idx?: number } | null)?.idx ? navigate(-1) : navigate(fallback, { replace: true }));
 }

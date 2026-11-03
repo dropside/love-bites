@@ -100,6 +100,7 @@ test('staples are labelled, can be added to the list, and show under Staples', a
   await expect(salt).toContainText('Staple');
   await expect(page.getByText('At home', { exact: true })).toHaveCount(0);
   await page.getByTestId('add-to-list').click();
+  await expect(page.getByText('Ingredients added to your list.')).toBeVisible();
   await page.goto('./#/shop');
   const staples = page.getByTestId('staples-section');
   await expect(staples).toContainText(/salt/i);
@@ -136,4 +137,38 @@ test('tortellini in a recipe matches tortellini, not spirals', async ({ page }) 
   await expect(rows.filter({ hasText: 'Tortellini' })).toContainText(/tortellini/i);
   await expect(rows.filter({ hasText: 'Tortellini' })).not.toContainText(/spirals/i);
   await expect(rows.filter({ hasText: 'Spirals' })).toContainText(/spirals/i);
+});
+
+test('adding to the list, the plan and the cookbook can all be undone', async ({ page }) => {
+  await enter(page);
+  await waitForCard(page);
+  const [r] = await completeRecipeIds(page, 1, 'onion');
+  await page.goto(`./#/recipe/${r.id}`);
+  await page.getByTestId('add-to-list').click();
+  await expect(page.getByRole('button', { name: 'See list' })).toBeVisible();
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByText('Taken back off the list.')).toBeVisible();
+  expect(await page.evaluate(() => new Promise((res) => { const req = indexedDB.open('love-bites'); req.onsuccess = () => { const t = req.result.transaction('shopExtras').objectStore('shopExtras').count(); t.onsuccess = () => res(t.result); }; }))).toBe(0);
+
+  await page.getByTestId('add-to-plan').click();
+  await page.getByTestId('confirm-add-plan').click();
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await page.goto('./#/plan');
+  await expect(page.getByTestId('plan-meal')).toHaveCount(0);
+
+  await page.goto(`./#/recipe/${r.id}`);
+  await page.getByTestId('save-recipe').click();
+  await expect(page.getByTestId('save-recipe')).toHaveText('Archive');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByTestId('save-recipe')).toHaveText('Save recipe');
+});
+
+test('Back on a recipe opened directly goes to the cookbook', async ({ page }) => {
+  await enter(page);
+  await waitForCard(page);
+  const [r] = await completeRecipeIds(page, 1, 'onion');
+  const fresh = await page.context().newPage();
+  await fresh.goto(`./#/recipe/${r.id}`);
+  await fresh.getByRole('button', { name: 'Back' }).click();
+  await expect(fresh).toHaveURL(/#\/cookbook$/);
 });
