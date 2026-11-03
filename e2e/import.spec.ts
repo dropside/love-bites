@@ -87,3 +87,53 @@ test('finishing a shop adds what was ticked to the pantry automatically', async 
   await expect(page.getByText(/added to your pantry/)).toBeVisible();
   await expect(page.getByRole('main')).toContainText('Onion');
 });
+
+test('staples are labelled, can be added to the list, and show under Staples', async ({ page }) => {
+  await enter(page);
+  await waitForCard(page);
+  const id = await page.evaluate(async () => {
+    const all = (await (await fetch('data/recipes-index.json')).json()) as { id: string; completeness: string; ingredientIds: string[]; valueCents: number | null }[];
+    return all.find((r) => r.completeness === 'complete' && r.valueCents != null && r.ingredientIds.includes('salt') && r.ingredientIds.includes('onion'))!.id;
+  });
+  await page.goto(`./#/recipe/${id}`);
+  const salt = page.getByTestId('ingredient').filter({ hasText: /salt/i }).first();
+  await expect(salt).toContainText('Staple');
+  await expect(page.getByText('At home', { exact: true })).toHaveCount(0);
+  await page.getByTestId('add-to-list').click();
+  await page.goto('./#/shop');
+  const staples = page.getByTestId('staples-section');
+  await expect(staples).toContainText(/salt/i);
+  await staples.getByRole('checkbox', { name: /Buy .*salt/i }).first().click();
+  await expect(page.getByTestId('shop-row').filter({ hasText: /salt/i }).first()).toBeVisible();
+  await page.goto(`./#/recipe/${id}`);
+  await expect(salt).toContainText('On the list');
+});
+
+test('product picker shows photos and sorts by price', async ({ page }) => {
+  await enter(page);
+  await waitForCard(page);
+  const [r] = await completeRecipeIds(page, 1, 'onion');
+  await page.goto(`./#/recipe/${r.id}`);
+  await page.getByTestId('ingredient').filter({ hasText: /onion/i }).first().getByRole('button').first().click();
+  await expect(page.getByTestId('product-option').first()).toBeVisible();
+  await expect(page.getByTestId('product-thumb').first()).toHaveAttribute('src', /assets\.woolworths\.com\.au\/images/);
+  await page.getByLabel('Search all products').fill('pasta');
+  await page.getByTestId('product-sort').selectOption('cheapest');
+  const prices = await page.getByTestId('product-option').evaluateAll((els) => els.map((e) => parseFloat((e.textContent ?? '').match(/\$(\d+\.\d\d)/)?.[1] ?? 'NaN')));
+  const clean = prices.filter((n) => !Number.isNaN(n));
+  expect(clean.length).toBeGreaterThan(3);
+  expect(clean).toEqual([...clean].sort((a, b) => a - b));
+});
+
+test('tortellini in a recipe matches tortellini, not spirals', async ({ page }) => {
+  await enter(page);
+  await page.goto('./#/recipe/new/edit');
+  await page.getByLabel('Name').fill('Tortellini bake');
+  await page.getByLabel('Ingredients, one per line').fill('600 g cheese tortellini\n500 g pasta spirals');
+  await page.getByLabel('Step 1').fill('Cook.');
+  await page.getByTestId('save-recipe-edit').click();
+  const rows = page.getByTestId('ingredient');
+  await expect(rows.filter({ hasText: 'Tortellini' })).toContainText(/tortellini/i);
+  await expect(rows.filter({ hasText: 'Tortellini' })).not.toContainText(/spirals/i);
+  await expect(rows.filter({ hasText: 'Spirals' })).toContainText(/spirals/i);
+});

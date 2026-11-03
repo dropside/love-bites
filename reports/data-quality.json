@@ -1,32 +1,32 @@
 {
-  "generatedAt": "2026-11-02T05:49:27.704Z",
+  "generatedAt": "2026-11-02T23:52:32.950Z",
   "recipes": {
-    "totalDistinct": 2301,
-    "candidatesBeforeDedupe": 2389,
+    "totalDistinct": 2302,
+    "candidatesBeforeDedupe": 2390,
     "duplicatesRemoved": 88,
     "byCompleteness": {
-      "complete": 1588,
+      "complete": 1589,
       "discovery-only": 668,
       "needs-review": 45
     },
     "bySource": {
-      "Wikibooks Cookbook": 850,
+      "Wikibooks Cookbook": 851,
       "TheMealDB": 783,
       "ThermoFun": 425,
       "ThermoBliss": 243
     },
     "byRights": {
-      "full-text": 1633,
+      "full-text": 1634,
       "link-only": 668
     },
     "byLicense": {
-      "CC BY-SA 4.0": 850,
+      "CC BY-SA 4.0": 851,
       "TheMealDB API terms (content from official endpoints may be copied and modified; credit TheMealDB)": 783,
       "All rights reserved by the author: link only": 668
     },
     "servingsStatedBySource": 336,
-    "servingsEstimated": 1297,
-    "withUsableInstructions": 1633,
+    "servingsEstimated": 1298,
+    "withUsableInstructions": 1634,
     "thermomix": {
       "nativeSourceLinkOnly": 668,
       "suitableUnverified": 173,
@@ -35,14 +35,14 @@
     },
     "images": {
       "withLicensedImage": 783,
-      "withoutImage": 1518
+      "withoutImage": 1519
     },
-    "pricedRecipes": 1379,
-    "distinctTitleKeys": 2301,
+    "pricedRecipes": 1380,
+    "distinctTitleKeys": 2302,
     "importStats": {
       "wbSkippedNonRecipe": 3,
       "wbRejectedStructure": 237,
-      "wbRejectedQuality": 2761,
+      "wbRejectedQuality": 2760,
       "thermomixLinksSkipped": 359
     }
   },
@@ -72,11 +72,11 @@
       "non-food department": 6313
     },
     "matching": {
-      "canonicalIngredients": 189,
-      "canonicalMatched": 186,
-      "productsInMatchTable": 1556,
-      "ingredientLinesInReliableRecipes": 15510,
-      "ingredientLinesWithProductMatch": 14906,
+      "canonicalIngredients": 199,
+      "canonicalMatched": 196,
+      "productsInMatchTable": 1639,
+      "ingredientLinesInReliableRecipes": 15516,
+      "ingredientLinesWithProductMatch": 14912,
       "lineMatchCoveragePct": 96.1,
       "canonicalUsedButUnmatched": [
         "rocket",

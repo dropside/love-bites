@@ -1,6 +1,7 @@
 // Shared classification: turns parsed ingredients and steps into a validated Recipe.
 import { getCanonical } from '../../src/domain/ingredients';
 import type { Allergen, Completeness, Recipe, RecipeIngredient, RecipeInstruction, RecipeSource, ThermomixLevel } from '../../src/domain/types';
+import { classifyMealTypes } from '../../src/domain/mealTypes';
 import { convertDim, normaliseUnit } from '../../src/domain/units';
 
 export function extractTimers(text: string): number[] {
@@ -36,26 +37,6 @@ export function splitInstructions(block: string): string[] {
 const THERMOMIX_SUITED = /\b(soups?|risotto|hummus|houmous|dips?|pesto|custard|mash(ed)?|puree|purée|dough|smoothie|bechamel|béchamel|white sauce|curry paste|chowder|bisque|gazpacho|sorbet|mayonnaise|hollandaise|porridge|jam|chutney|bread|pizza base|dhal|dal)\b/i;
 const QUICK_MAX = 30;
 
-const MEAL_KEYWORDS: [string, RegExp][] = [
-  ['dessert', /\b(dessert|cakes?|tarts?|pudding|pie|cookies?|biscuits?|brownies?|ice cream|mousse|cheesecake|pancakes?|crumble|muffins?|sweet|custard|meringue|pavlova|trifle|fudge|sorbet)\b/i],
-  ['breakfast', /\b(breakfast|omelet|omelette|porridge|granola|french toast|scrambled|frittata|shakshuka)\b/i],
-  ['soup', /\b(soup|chowder|bisque|broth|gazpacho)\b/i],
-  ['salad', /\bsalad\b/i],
-  ['side', /\b(side|mash|coleslaw|roast potatoes|chips|rice pilaf|fried rice)\b/i],
-  ['snack', /\b(snack|dips?|hummus|crackers|bars?|appetizer|appetiser|starter|canape)\b/i],
-  ['drink', /\b(smoothie|cocktail|drink|lemonade|punch|tea|coffee|milkshake|liqueur|kahlua)\b/i],
-  ['sauce', /\b(sauce|dressing|gravy|chutney|relish|pesto|marinade|condiment)\b/i],
-  ['baking', /\b(bread|loaf|scones?|rolls|buns|muffins?|cakes?|cookies?|biscuits?|focaccia|pizza dough)\b/i],
-];
-
-export function classifyMealTypes(title: string, hint: string): string[] {
-  const hay = `${title} ${hint}`;
-  const out = MEAL_KEYWORDS.filter(([, re]) => re.test(hay)).map(([k]) => k);
-  if (!out.some((m) => ['dessert', 'breakfast', 'snack', 'drink', 'sauce', 'side', 'baking'].includes(m))) {
-    out.push('dinner', 'lunch');
-  }
-  return out;
-}
 
 const CUISINES: [string, RegExp][] = [
   ['Italian', /\b(italian|pasta|risotto|lasagn[ae]|gnocchi|bolognese|carbonara|pizza|focaccia|minestrone|arancini|tiramisu)\b/i],
@@ -80,7 +61,7 @@ export const classifyCuisine = (hay: string): string | null => CUISINES.find(([,
 
 const MAIN_ORDER: [string, RegExp][] = [
   ['chicken', /^chicken/], ['beef', /^beef/], ['lamb', /^lamb/], ['pork', /^(pork|bacon|ham|sausage)/],
-  ['seafood', /^(salmon|white-fish|prawn|tuna|mussel)/], ['eggs', /^egg$/], ['pasta', /^(pasta|spaghetti|lasagne|noodles)/],
+  ['seafood', /^(salmon|white-fish|prawn|tuna|mussel)/], ['eggs', /^egg$/], ['pasta', /^(pasta|spaghetti|lasagne|noodles|tortellini|ravioli|gnocchi|macaroni|penne|fusilli|fettuccine|pasta-shells|rigatoni|orzo)/],
   ['rice', /^(rice|arborio)/], ['beans & lentils', /^(kidney|black-beans|white-beans|chickpeas|lentils|tofu)/],
   ['potato', /^(potato|sweet-potato)/], ['vegetables', /^(broccoli|cauliflower|pumpkin|eggplant|courgette|mushroom|spinach|capsicum|cabbage|carrot|tomato)/],
 ];
@@ -100,7 +81,7 @@ function kidTasks(ings: RecipeIngredient[], title: string): string[] {
   const out = new Set<string>();
   const veg = ings.find((i) => getCanonical(i.canonicalId)?.category === 'veg');
   if (veg) out.add(`Wash the ${veg.name.toLowerCase()} in cold water.`);
-  const dry = ings.find((i) => ['flour', 'sugar', 'oats', 'cocoa', 'rice', 'pasta'].includes(i.canonicalId ?? ''));
+  const dry = ings.find((i) => ['flour', 'sugar', 'oats', 'cocoa', 'rice', 'pasta', 'macaroni', 'penne', 'fusilli', 'fettuccine', 'pasta-shells', 'rigatoni', 'orzo'].includes(i.canonicalId ?? ''));
   if (dry) out.add(`Measure the ${dry.name.toLowerCase()} into a cold bowl.`);
   if (ings.some((i) => ['basil', 'mint', 'parsley', 'coriander', 'lettuce', 'spinach'].includes(i.canonicalId ?? ''))) out.add('Tear the soft herbs or leaves by hand.');
   if (ings.some((i) => i.canonicalId === 'egg')) out.add('Crack the eggs into a separate bowl, then wash hands.');
@@ -173,7 +154,7 @@ export function finalise(d: RecipeDraft): Recipe {
   }
 
   const titleAndSteps = `${d.title} ${stepText}`;
-  const mealTypes = classifyMealTypes(d.title, d.mealHint ?? '');
+  const mealTypes = classifyMealTypes(d.title, d.mealHint ?? '', ids, allergens);
   const tags = new Set(d.tags ?? []);
   if (total != null && total <= QUICK_MAX) tags.add('quick');
   if (/\b(one[- ]pot|one[- ]pan|sheet[- ]pan|tray bake|traybake|slow cooker|crock ?pot)\b/i.test(titleAndSteps)) tags.add('one-pot');

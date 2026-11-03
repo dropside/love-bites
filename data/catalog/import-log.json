@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-11-02T04:47:52.679Z",
-  "candidates": 2389,
-  "kept": 2301,
+  "generatedAt": "2026-11-02T23:52:26.791Z",
+  "candidates": 2390,
+  "kept": 2302,
   "stats": {
     "wbSkippedNonRecipe": 3,
     "wbRejectedStructure": 237,
-    "wbRejectedQuality": 2761,
+    "wbRejectedQuality": 2760,
     "thermomixLinksSkipped": 359
   },
   "duplicates": [

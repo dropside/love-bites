@@ -78,3 +78,16 @@ Great with guacamole.`;
     expect(parsePastedRecipe('Just some words\nand more', null)).toBeNull();
   });
 });
+
+describe('meal types', () => {
+  it('only calls savoury mains dinner', async () => {
+    const { classifyMealTypes } = await import('../../domain/mealTypes');
+    expect(classifyMealTypes('Lemon Icing', '')).not.toContain('dinner');
+    expect(classifyMealTypes('Barbecue Sauce (Sweet)', '')).toEqual(['sauce']);
+    expect(classifyMealTypes('Chicken Marinade', '')).toEqual(['sauce']);
+    expect(classifyMealTypes('Beef and Mustard Pie', '')).toContain('dinner');
+    expect(classifyMealTypes('Apple Pie', '')).toContain('dessert');
+    expect(classifyMealTypes('Prawns with Romesco sauce', '', [], new Set(['shellfish']))).toContain('dinner');
+    expect(classifyMealTypes('Strawberry Jam', '', ['sugar'])).not.toContain('dinner');
+  });
+});

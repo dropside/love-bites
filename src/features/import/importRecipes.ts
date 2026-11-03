@@ -1,8 +1,9 @@
 // Import recipes for Ren's own use: from a link, pasted text, JSON (including schema.org Recipe) or simple CSV. Stored on this device only.
 import { z } from 'zod';
-import { parseIngredientLine } from '../../domain/ingredients';
+import { getCanonical, parseIngredientLine } from '../../domain/ingredients';
+import { classifyMealTypes } from '../../domain/mealTypes';
 import { metricise } from '../../domain/metric';
-import type { Recipe } from '../../domain/types';
+import type { Allergen, Recipe } from '../../domain/types';
 import { uid } from '../../state/db';
 import { extractTimers } from '../recipe/recipeUtils';
 
@@ -165,9 +166,11 @@ export function toRecipe(input: ImportInput): Recipe & { updatedAt: number } {
     return { id: `${id}-s${i}`, text, timerSeconds: extractTimers(text) };
   });
   const host = input.sourceUrl ? new URL(input.sourceUrl).hostname.replace(/^www\./, '') : null;
+  const ids = [...new Set(ingredients.map((i) => i.canonicalId).filter((x): x is string => Boolean(x)))];
+  const allergens = new Set<Allergen>(ids.flatMap((i) => getCanonical(i)?.allergens ?? []));
   return {
     id, title: input.title, description: input.description ?? null, completeness: steps.length ? 'complete' : 'ingredients-verified', servings: input.servings ?? 4, servingsVerified: Boolean(input.servings),
-    prepMinutes: null, cookMinutes: null, totalMinutes: input.minutes ?? null, timeEstimated: false, mealTypes: ['dinner', 'lunch'], cuisine: null, mainIngredient: null, tags: [], dietary: [], allergens: [],
+    prepMinutes: null, cookMinutes: null, totalMinutes: input.minutes ?? null, timeEstimated: false, mealTypes: classifyMealTypes(input.title, '', ids, allergens), cuisine: null, mainIngredient: null, tags: [], dietary: [], allergens: [...allergens],
     hasUnknownIngredients: ingredients.some((i) => !i.canonicalId), thermomix: 'none',
     image: input.image ? { url: input.image, credit: `Photo: ${host ?? 'source site'}`, rights: 'Shown from the original page' } : null,
     ingredients, steps, equipment: [], kidTasks: [], issues: [],

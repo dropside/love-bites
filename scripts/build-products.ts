@@ -79,6 +79,7 @@ function fromWoolies(rows: Record<string, string>[]): Product[] {
       unitPriceCents: cents(r['size.cupPrice']),
       unitPriceMeasure: r['size.cupMeasure'] || null,
       slug: r.slug,
+      isNew: r['price.isNew'] === 'True',
     });
   }
   return out;

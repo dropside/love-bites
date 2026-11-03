@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Button, Chip, Field, selectClass, Sheet } from '../../components/ui';
-import { emptyFilters, type DiscoverFilters } from '../../domain/ranking';
+import { emptyFilters, orderMeals, type DiscoverFilters } from '../../domain/ranking';
 import type { RecipeSummary } from '../../domain/types';
 
 const TAGS: [string, string][] = [
@@ -28,7 +28,7 @@ export function FilterSheet({ open, onClose, filters, onChange, index, resultCou
       for (const r of index) for (const k of get(r)) if (k) m.set(k, (m.get(k) ?? 0) + 1);
       return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
     };
-    return { cuisines: count((r) => [r.cuisine]).slice(0, 40).sort(), meals: count((r) => r.mealTypes), mains: count((r) => [r.mainIngredient]) };
+    return { cuisines: count((r) => [r.cuisine]).slice(0, 40).sort(), meals: orderMeals(count((r) => r.mealTypes)), mains: count((r) => [r.mainIngredient]) };
   }, [index]);
   const set = (p: Partial<DiscoverFilters>) => onChange({ ...filters, ...p });
   const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);

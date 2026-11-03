@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Empty, ErrorState, IconButton, inputClass, selectClass, Skeleton, Tag, useFeedback } from '../../components/ui';
 import { loadMatchIds } from '../../data/catalog';
-import { activeFilterCount, applyFilters, applySort, availabilityScore, emptyFilters, profileFrom, rankDeck, type DiscoverFilters } from '../../domain/ranking';
+import { activeFilterCount, applyFilters, applySort, availabilityScore, emptyFilters, orderMeals, profileFrom, rankDeck, titleMatchesFirst, type DiscoverFilters } from '../../domain/ranking';
 import type { RecipeSummary } from '../../domain/types';
 import { db, weekStartOf } from '../../state/db';
 import { useCatalogIndex, useHousehold } from '../../state/hooks';
@@ -85,7 +85,7 @@ export function DiscoverScreen() {
       maxPerServeCents: household.maxPerServeCents,
       preferredMeals: household.preferredMeals,
     });
-    return applySort(ranked, filters.sort);
+    return titleMatchesFirst(applySort(ranked, filters.sort), filters.query);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered, epoch, household.allergies, household.dislikedIds, household.dietary, household.maxPerServeCents, household.preferredMeals, swipes === undefined, pantryIds, matchedIds]);
 
@@ -100,11 +100,7 @@ export function DiscoverScreen() {
     if (++swipedCount.current % 12 === 0) setEpoch((e) => e + 1);
   };
 
-  const mealTypes = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const r of index ?? []) for (const t of r.mealTypes) m.set(t, (m.get(t) ?? 0) + 1);
-    return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
-  }, [index]);
+  const mealTypes = useMemo(() => orderMeals((index ?? []).flatMap((r) => r.mealTypes)), [index]);
 
   const hasFilters = activeFilterCount(filters) > 0;
   const hour = new Date().getHours();

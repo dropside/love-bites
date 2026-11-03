@@ -9,9 +9,9 @@ import { formatMoney } from '../../domain/pricing';
 import type { BasketLine } from '../../domain/basket';
 import type { Product, Recipe, RecipeIngredient } from '../../domain/types';
 import { formatQuantity, fraction } from '../../domain/units';
-import { activeSession, db, patchCookbook, uid } from '../../state/db';
-import { useBasket, useHousehold, useRecipe } from '../../state/hooks';
-import { LovedBy, ShareWithFamilyButton } from '../family/FamilyBits';
+import { activeSession, db, patchCookbook, setBuyStaple, uid } from '../../state/db';
+import { useBasket, useBuyStaples, useHousehold, useRecipe } from '../../state/hooks';
+import { LovedBy, PublishButton, ShareWithFamilyButton } from '../family/FamilyBits';
 import { AddToPlanSheet } from '../plan/AddToPlanSheet';
 import { ProductPicker, productSize } from '../shop/ProductPicker';
 
@@ -42,7 +42,7 @@ export function highlightStep(text: string, ingredients: RecipeIngredient[]): Re
 
 export const timerLabel = (s: number) => (s >= 3600 ? `${+(s / 3600).toFixed(1)} hr` : s >= 60 ? `${Math.round(s / 60)} min` : `${s} sec`);
 
-function IngredientRow({ ing, line, products, onPick }: { ing: RecipeIngredient; line?: BasketLine; products?: Map<string, Product>; onPick: () => void }) {
+function IngredientRow({ ing, line, products, onPick, buying }: { ing: RecipeIngredient; line?: BasketLine; products?: Map<string, Product>; onPick: () => void; buying: boolean }) {
   const product = line?.plan?.lines[0]?.productId ?? null;
   return (
     <li data-testid="ingredient" className="border-b border-line py-3 last:border-0">
@@ -53,16 +53,26 @@ function IngredientRow({ ing, line, products, onPick }: { ing: RecipeIngredient;
         </p>
       </div>
       {!ing.original.toLowerCase().endsWith(ing.name.toLowerCase()) && <p className="text-xs text-muted">{ing.original}</p>}
-      <IngredientProduct line={line} product={product ? products?.get(product) : null} onPick={onPick} />
+      <IngredientProduct line={line} product={product ? products?.get(product) : null} onPick={onPick} buying={buying} />
     </li>
   );
 }
 
-function IngredientProduct({ line, product: p, onPick }: { line?: BasketLine; product?: Product | null; onPick: () => void }) {
+function StapleToggle({ id, name, buying }: { id: string; name: string; buying: boolean }) {
+  return (
+    <label className="inline-flex items-center gap-1.5 font-bold">
+      <Tag tone="lime" className="py-0.5">Staple</Tag>
+      <input type="checkbox" className="h-4 w-4 accent-[#19171B]" checked={buying} aria-label={`Add ${name} to the shopping list`} onChange={(e) => void setBuyStaple(id, e.target.checked)} />
+      {buying ? 'On the list' : 'Add to list'}
+    </label>
+  );
+}
+
+function IngredientProduct({ line, product: p, onPick, buying }: { line?: BasketLine; product?: Product | null; onPick: () => void; buying: boolean }) {
   if (!line) return null;
   return (
     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-      {line.assumedStaple && <Tag tone="lime" className="py-0.5">At home</Tag>}
+      {(line.assumedStaple || buying) && line.canonicalId && <StapleToggle id={line.canonicalId} name={line.name} buying={buying} />}
       {!line.assumedStaple && line.pantryUsed > 0 && line.dim && <Tag tone="lime" className="py-0.5">{formatQuantity(line.pantryUsed, line.dim)} in pantry</Tag>}
       {p && (
         <button type="button" onClick={onPick} className="font-semibold underline decoration-gum underline-offset-2">
@@ -121,6 +131,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
   const [collectionsOpen, setCollectionsOpen] = useState(false);
   const [picker, setPicker] = useState<string | null>(null);
   const book = useLiveQuery(() => db.cookbook.get(recipe.id), [recipe.id]);
+  const buyStaples = useBuyStaples();
   const collections = useLiveQuery(() => db.collections.toArray(), []) ?? [];
   const ratings = useLiveQuery(() => db.ratings.where('recipeId').equals(recipe.id).toArray(), [recipe.id]);
   const session = useLiveQuery(() => db.cooking.get(recipe.id), [recipe.id]);
@@ -202,6 +213,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
           <Button variant="white" icon={book?.saved ? Archive : Heart} data-testid="save-recipe" onClick={() => void (book?.saved ? confirm({ title: 'Archive this recipe?', body: "It leaves your cookbook but stays in the archive.", confirmLabel: 'Archive' }).then((ok) => { if (ok) void patchCookbook(recipe.id, { archived: true, saved: false }); }) : patchCookbook(recipe.id, { saved: true, archived: false }))}>{book?.saved ? 'Archive' : 'Save recipe'}</Button>
           <Button variant="white" icon={Share2} onClick={() => void share()}>Share link</Button>
           <ShareWithFamilyButton recipe={recipe} />
+          <PublishButton recipe={recipe} />
           {reliable && <Button variant="white" icon={Pencil} onClick={() => void editCopy()}>{recipe.userOwned ? 'Edit recipe' : 'Edit my copy'}</Button>}
           {reliable && <Button variant="white" icon={Star} onClick={() => setRateOpen(true)}>Rate / note</Button>}
         </div>
@@ -230,7 +242,7 @@ function RecipeBody({ recipe }: { recipe: Recipe }) {
               <ul>
                 {scaled.map((ing) => {
                   const line = lines.get(ing.canonicalId ?? `text:${ing.name.toLowerCase()}`);
-                  return <IngredientRow key={ing.id} ing={ing} line={line} products={data?.products} onPick={() => line && setPicker(line.key)} />;
+                  return <IngredientRow key={ing.id} ing={ing} line={line} products={data?.products} buying={Boolean(ing.canonicalId && buyStaples.has(ing.canonicalId))} onPick={() => line && setPicker(line.key)} />;
                 })}
               </ul>
             </Card>

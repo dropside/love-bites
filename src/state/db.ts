@@ -197,7 +197,16 @@ export async function saveHousehold(patch: Partial<Household>) {
   await db.settings.put({ key: 'household', value: { ...current, ...patch } });
 }
 
-export const emptyCookbookRow = (recipeId: string): CookbookRow => ({
+/** Staples Ren has said she's out of: bought this shop instead of assumed at home. Cleared when a shop is finished. */
+export async function setBuyStaple(canonicalId: string, buy: boolean) {
+  const row = await db.settings.get('buyStaples');
+  const current = new Set((row?.value as string[] | undefined) ?? []);
+  if (buy) current.add(canonicalId);
+  else current.delete(canonicalId);
+  await db.settings.put({ key: 'buyStaples', value: [...current] });
+}
+
+export const emptyCookbookRow =(recipeId: string): CookbookRow => ({
   recipeId, addedAt: Date.now(), saved: false, favourite: false, wantToTry: false, familyFavourite: false, archived: false, lastCookedAt: null, cookCount: 0, collectionIds: [],
 });
 

@@ -1,4 +1,5 @@
-import { Heart, Trash2, Users } from 'lucide-react';
+import { Globe, Heart, Trash2, Users } from 'lucide-react';
+import { publishRecipe, unpublishRecipe, useCommunityRecipes, useIsContributor } from '../../cloud/community';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RecipeImage } from '../../components/RecipeBits';
@@ -41,6 +42,38 @@ export function ShareWithFamilyButton({ recipe }: { recipe: Recipe }) {
         <textarea id="share-note" rows={3} maxLength={280} placeholder="Made this last night, so good with extra garlic" className="w-full rounded-2xl border border-line p-3 text-base" value={note} onChange={(e) => setNote(e.target.value)} />
       </Sheet>
     </>
+  );
+}
+
+/** For contributors: put one of your own recipes into Love Bites for the whole family, or take it back out. */
+export function PublishButton({ recipe }: { recipe: Recipe }) {
+  const contributor = useIsContributor();
+  const community = useCommunityRecipes();
+  const { toast, confirm } = useFeedback();
+  const navigate = useNavigate();
+  const { me } = useFamily();
+  if (!cloudEnabled() || !contributor) return null;
+  const publishedId = `community-${recipe.id.replace(/^(user|community)-/, '')}`;
+  const published = community.find((r) => r.id === publishedId);
+  if (recipe.id.startsWith('community-')) {
+    if (published?.user_id !== me) return null;
+    return (
+      <Button variant="white" icon={Globe} data-testid="unpublish" onClick={() => void confirm({ title: 'Take this out of Love Bites?', body: 'It disappears from everyone’s feed. Anyone who saved it keeps their plans, but it may stop opening for them.', danger: true, confirmLabel: 'Remove' }).then(async (ok) => {
+        if (!ok) return;
+        if (await unpublishRecipe(recipe.id)) {
+          toast('Removed from Love Bites.');
+          navigate('/');
+        } else toast("Couldn't remove it. You need to be online.");
+      })}>Remove from Love Bites</Button>
+    );
+  }
+  if (!recipe.userOwned) return null;
+  return (
+    <Button variant="lime" icon={Globe} data-testid="publish" onClick={() => void confirm({ title: published ? 'Update it in Love Bites?' : 'Add to Love Bites for everyone?', body: 'Everyone in the family will see it in Discover. Only add recipes you’re happy to share.', confirmLabel: published ? 'Update' : 'Add it' }).then(async (ok) => {
+      if (!ok) return;
+      const id = await publishRecipe(recipe);
+      toast(id ? 'Added to Love Bites. Everyone can find it now.' : "Couldn't add it. You need to be online.");
+    })}>{published ? 'Update in Love Bites' : 'Add to Love Bites'}</Button>
   );
 }
 

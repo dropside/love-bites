@@ -231,3 +231,15 @@ export function applySort(list: RecipeSummary[], sort: DiscoverFilters['sort']):
   else s.sort((a, b) => a.title.localeCompare(b.title));
   return s;
 }
+
+/** Meal types in the order people think about them, for dropdowns. */
+const MEAL_ORDER = ['dinner', 'lunch', 'breakfast', 'dessert', 'baking', 'soup', 'salad', 'snack', 'side', 'sauce', 'drink', 'other'];
+export const orderMeals = (types: Iterable<string>) => [...new Set(types)].sort((a, b) => (MEAL_ORDER.indexOf(a) + 1 || 99) - (MEAL_ORDER.indexOf(b) + 1 || 99));
+
+/** When searching, recipes whose title has every search word come before ones that only mention it. */
+export function titleMatchesFirst(list: RecipeSummary[], query: string): RecipeSummary[] {
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return list;
+  const inTitle = (r: RecipeSummary) => terms.every((t) => r.title.toLowerCase().includes(t));
+  return [...list.filter(inTitle), ...list.filter((r) => !inTitle(r))];
+}

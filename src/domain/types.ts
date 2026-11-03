@@ -176,6 +176,8 @@ export interface Product {
   unitPriceCents: Cents | null;
   unitPriceMeasure: string | null;
   slug: string;
+  /** Woolworths marks it as new to the range. */
+  isNew?: boolean;
 }
 
 export interface ProductCatalogMeta {

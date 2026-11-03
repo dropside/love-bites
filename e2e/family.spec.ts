@@ -4,8 +4,8 @@ import { expect, test, type BrowserContext, type Page, type Route } from '@playw
 const API = 'https://cloud.test';
 const FAMILY: Record<string, string> = { 'ren@example.com': 'u-ren', 'katie@example.com': 'u-katie' };
 type Row = Record<string, unknown>;
-const store: Record<string, Row[]> = { profiles: [], user_state: [], family_shares: [], family_loves: [] };
-const KEYS: Record<string, string[]> = { profiles: ['id'], user_state: ['user_id'], family_loves: ['user_id', 'recipe_id'], family_shares: ['id'] };
+const store: Record<string, Row[]> = { profiles: [], user_state: [], family_shares: [], family_loves: [], contributors: [{ user_id: 'u-ren' }], community_recipes: [] };
+const KEYS: Record<string, string[]> = { profiles: ['id'], user_state: ['user_id'], family_loves: ['user_id', 'recipe_id'], family_shares: ['id'], contributors: ['user_id'], community_recipes: ['id'] };
 
 const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
 const jwt = (sub: string) => `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub, role: 'authenticated', exp: Math.floor(Date.now() / 1000) + 3600 })}.sig`;
@@ -51,6 +51,7 @@ async function handle(route: Route) {
     if (table === 'family_shares') r.id ??= `s-${rows.length + 1}`;
     if (table !== 'profiles') r.user_id ??= me;
     if ((r.user_id ?? r.id) !== me) return json(403, { message: 'row-level security' });
+    if (table === 'community_recipes' && !store.contributors.some((c) => c.user_id === me)) return json(403, { message: 'row-level security' });
     const key = (x: Row) => KEYS[table].map((k) => x[k]).join('|');
     const i = rows.findIndex((x) => key(x) === key(r));
     if (i >= 0) rows[i] = { ...rows[i], ...r };
@@ -74,7 +75,9 @@ async function signIn(page: Page, email: string, name?: string) {
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill('tasty-secret');
   await page.getByRole('button', { name: 'Let me in' }).click();
-  if (name) {
+  // First sign-in asks for a name; later ones (the mock keeps profiles between tests) go straight in.
+  await expect(page.getByTestId('swipe-card').or(page.getByLabel('Your name'))).toBeVisible();
+  if (name && (await page.getByLabel('Your name').count())) {
     await page.getByLabel('Your name').fill(name);
     await page.getByRole('button', { name: 'Done' }).click();
   }
@@ -133,4 +136,35 @@ test('family: invite-only password sign in, private sync across phones, shared r
   await renPhone2.getByTestId('sign-out').click();
   await renPhone2.getByTestId('confirm-yes').click();
   await expect(renPhone2.getByLabel('Email')).toBeVisible();
+});
+
+test('contributors add their imported recipes to Love Bites for everyone; others cannot', async ({ browser }) => {
+  const recipe = ['Nana’s lemon slice', 'Ingredients', '1 cup flour', '100 g butter', '1 lemon', 'Method', '1. Mix it all.', '2. Bake at 350°F for 20 minutes.'].join('\n');
+  const ren = await phone(await browser.newContext());
+  await signIn(ren, 'ren@example.com', 'Ren');
+  await ren.goto('./#/import');
+  await ren.getByTestId('import-paste').fill(recipe);
+  await ren.getByTestId('import-paste-save').click();
+  await expect(ren.getByTestId('recipe-title')).toHaveText('Nana’s lemon slice');
+  await ren.getByTestId('publish').click();
+  await ren.getByTestId('confirm-yes').click();
+  await expect(ren.getByText('Added to Love Bites')).toBeVisible();
+  expect(store.community_recipes).toHaveLength(1);
+  expect((store.community_recipes[0].recipe as { mealTypes: string[] }).mealTypes).not.toContain('dinner');
+
+  const katie = await phone(await browser.newContext());
+  await signIn(katie, 'katie@example.com', 'Katie');
+  await katie.getByTestId('view-toggle').click();
+  await katie.getByLabel('Search recipes').fill('lemon slice');
+  const published = katie.getByTestId('discover-row').filter({ hasText: 'Nana’s lemon slice' });
+  await expect(published).toBeVisible();
+  await published.getByRole('link').click();
+  await expect(katie.getByText('Bake at 180°C for 20 minutes.')).toBeVisible();
+  await expect(katie.getByTestId('unpublish')).toHaveCount(0);
+  // Katie isn't a contributor in this test, so her own imports can't be published.
+  await katie.goto('./#/import');
+  await katie.getByTestId('import-paste').fill(recipe.replace('Nana’s', 'Katie’s'));
+  await katie.getByTestId('import-paste-save').click();
+  await expect(katie.getByTestId('recipe-title')).toHaveText('Katie’s lemon slice');
+  await expect(katie.getByTestId('publish')).toHaveCount(0);
 });

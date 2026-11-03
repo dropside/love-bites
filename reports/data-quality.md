@@ -1,16 +1,16 @@
 # Love Bites data quality report
 
-Generated 2026-11-02T05:49:27.704Z. Every number below is counted from the catalogue files; nothing is estimated.
+Generated 2026-11-02T23:52:32.950Z. Every number below is counted from the catalogue files; nothing is estimated.
 
 ## Recipes
-- Total distinct: **2301** (from 2389 candidates, 88 duplicates removed)
-- By completeness: {"complete":1588,"discovery-only":668,"needs-review":45}
-- By source: {"Wikibooks Cookbook":850,"TheMealDB":783,"ThermoFun":425,"ThermoBliss":243}
-- By rights: {"full-text":1633,"link-only":668}
-- Servings stated by source: 336; estimated: 1297
-- With usable instructions: 1633
-- Priced (at least 80% of ingredients priced): 1379
-- Images: {"withLicensedImage":783,"withoutImage":1518}
+- Total distinct: **2302** (from 2390 candidates, 88 duplicates removed)
+- By completeness: {"complete":1589,"discovery-only":668,"needs-review":45}
+- By source: {"Wikibooks Cookbook":851,"TheMealDB":783,"ThermoFun":425,"ThermoBliss":243}
+- By rights: {"full-text":1634,"link-only":668}
+- Servings stated by source: 336; estimated: 1298
+- With usable instructions: 1634
+- Priced (at least 80% of ingredients priced): 1380
+- Images: {"withLicensedImage":783,"withoutImage":1519}
 
 ### Thermomix
 - Native recipes, link only: 668
@@ -24,8 +24,8 @@ Generated 2026-11-02T05:49:27.704Z. Every number below is counted from the catal
 - Store context: Generic online pricing: the snapshot does not identify a specific store
 - Unique products: **11074**; valid prices: 11074; pack quantities: 10653; variable weight: 212
 - On special: 3863. Store-specific observations: 0
-- Canonical ingredients matched: 186/189
-- Ingredient line match coverage: **96.1%** (14906/15510)
+- Canonical ingredients matched: 196/199
+- Ingredient line match coverage: **96.1%** (14912/15516)
 - Used but unmatched: rocket, caraway
 - Ambiguous matches: none
 

@@ -7,7 +7,8 @@ import { productUrl } from '../../data/productCodec';
 import { formatMoney, priceStatus, PRICE_STATUS_LABEL } from '../../domain/pricing';
 import type { ShopCategory } from '../../domain/types';
 import { formatQuantity } from '../../domain/units';
-import { activeSession, addDays, db, weekStartOf } from '../../state/db';
+import { getCanonical } from '../../domain/ingredients';
+import { activeSession, addDays, db, setBuyStaple, weekStartOf } from '../../state/db';
 import { useHousehold } from '../../state/hooks';
 import { useManifest } from './useManifest';
 import { ProductPicker } from './ProductPicker';
@@ -181,6 +182,26 @@ export function ShopScreen() {
               </section>
             ))}
           </div>
+
+          {(s.stapleLines.length > 0 || s.buyStaples.size > 0) && (
+            <section aria-label="Staples" className="mt-4" data-testid="staples-section">
+              <h2 className="mb-1 ml-1 text-sm font-extrabold uppercase tracking-wide text-deep">Staples</h2>
+              <Card className="py-1">
+                <p className="pt-2 text-xs text-muted">Things like salt and oil are assumed to be at home. Tick any you're out of and they go on the list.</p>
+                <ul className="divide-y divide-line">
+                  {[...new Map([...s.stapleLines.map((l) => [l.canonicalId!, l.name] as const), ...[...s.buyStaples].map((id) => [id, getCanonical(id)?.name ?? id] as const)]).entries()]
+                    .sort((a, b) => a[1].localeCompare(b[1]))
+                    .map(([id, name]) => (
+                      <li key={id} className="flex items-center gap-3 py-2.5">
+                        <Checkbox checked={s.buyStaples.has(id)} label={`Buy ${name}`} onChange={(c) => void setBuyStaple(id, c)} />
+                        <p className="flex-1 font-bold">{name}</p>
+                        <span className="text-xs text-muted">{s.buyStaples.has(id) ? 'On the list' : 'At home'}</span>
+                      </li>
+                    ))}
+                </ul>
+              </Card>
+            </section>
+          )}
 
           {totals.items > 0 && (
             <Card className="mt-4">

@@ -5,11 +5,17 @@ import { buildBasket, type Basket, type BasketContext, type BasketRecipeInput } 
 import { scaleIngredient } from '../domain/ingredients';
 import type { Recipe, RecipeSummary } from '../domain/types';
 import { defaultStapleIds, getRecipe, getRecipes, loadIndex, loadProducts, summaryOf, type ProductData } from '../data/catalog';
+import { useCommunityRecipes } from '../cloud/community';
 import { db, defaultHousehold, type Household, type PantryRow } from './db';
 
 export function useHousehold(): Household {
   const row = useLiveQuery(() => db.settings.get('household'), []);
   return useMemo(() => ({ ...defaultHousehold(defaultStapleIds()), ...((row?.value as Partial<Household>) ?? {}) }), [row]);
+}
+
+export function useBuyStaples(): Set<string> {
+  const row = useLiveQuery(() => db.settings.get('buyStaples'), []);
+  return useMemo(() => new Set((row?.value as string[] | undefined) ?? []), [row]);
 }
 
 export function useCatalogIndex() {
@@ -19,7 +25,8 @@ export function useCatalogIndex() {
     loadIndex().then(setCatalog).catch((e: Error) => setError(e.message));
   }, []);
   const user = useLiveQuery(() => db.userRecipes.toArray(), []);
-  const all = useMemo(() => (catalog ? [...(user ?? []).map(summaryOf), ...catalog] : null), [catalog, user]);
+  const community = useCommunityRecipes();
+  const all = useMemo(() => (catalog ? [...(user ?? []).map(summaryOf), ...community.map((r) => summaryOf(r.recipe)), ...catalog] : null), [catalog, user, community]);
   return { index: all, error };
 }
 
@@ -54,6 +61,7 @@ export function useBasket(entries: BasketEntry[] | undefined) {
   const household = useHousehold();
   const pantry = useLiveQuery(() => db.pantry.toArray(), []);
   const choices = useLiveQuery(() => db.productChoices.toArray(), []);
+  const buy = useBuyStaples();
   const [recipes, setRecipes] = useState<Map<string, Recipe> | null>(null);
   const key = (entries ?? []).map((e) => e.recipeId).sort().join('|');
 
@@ -73,11 +81,15 @@ export function useBasket(entries: BasketEntry[] | undefined) {
       products: data.products,
       matches: data.matches,
       overrides: Object.fromEntries(choices.map((c) => [c.canonicalId, c.productId])),
-      pantry: pantry.filter((p): p is PantryRow & { canonicalId: string } => Boolean(p.canonicalId)).map((p) => ({ canonicalId: p.canonicalId, quantity: p.staple ? null : p.quantity, dim: p.dim })),
-      staples: household.stapleIds,
+      // Staples she's marked as needing are bought like anything else, not assumed at home.
+      pantry: pantry
+        .filter((p): p is PantryRow & { canonicalId: string } => Boolean(p.canonicalId))
+        .filter((p) => !(buy.has(p.canonicalId) && (p.staple || p.quantity == null)))
+        .map((p) => ({ canonicalId: p.canonicalId, quantity: p.staple ? null : p.quantity, dim: p.dim })),
+      staples: household.stapleIds.filter((id) => !buy.has(id)),
       preferredBrands: household.preferredBrands,
     };
-  }, [data, pantry, choices, household.stapleIds, household.preferredBrands]);
+  }, [data, pantry, choices, household.stapleIds, household.preferredBrands, buy]);
 
   const basket = useMemo<Basket | null>(() => {
     if (!ctx || !recipes || !entries) return null;

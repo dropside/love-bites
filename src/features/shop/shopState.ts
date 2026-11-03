@@ -6,7 +6,7 @@ import { getCanonical } from '../../domain/ingredients';
 import type { Dim, Product, ShopCategory } from '../../domain/types';
 import { formatQuantity } from '../../domain/units';
 import { activeSession, db, uid, weekStartOf, type ManualItemRow, type ShopLineStateRow } from '../../state/db';
-import { useBasket, useHousehold, type BasketEntry } from '../../state/hooks';
+import { useBasket, useBuyStaples, useHousehold, type BasketEntry } from '../../state/hooks';
 
 export const CATEGORY_LABEL: Record<string, string> = {
   veg: 'Fruit and vegetables', meat: 'Meat and seafood', dairy: 'Dairy and eggs', bakery: 'Bakery', pantry: 'Pantry', frozen: 'Frozen', household: 'Household', other: 'Other',
@@ -102,6 +102,30 @@ export function useShopping() {
     return [...meals.filter((m) => !m.cooked).map((m) => ({ recipeId: m.recipeId, servings: m.servings })), ...extras.map((e) => ({ recipeId: e.recipeId, servings: e.servings }))];
   }, [meals, extras]);
   const { basket, data, ctx } = useBasket(entries);
+  const buy = useBuyStaples();
+
+  // Staples assumed at home, listed at the bottom so Ren can say which ones she's out of.
+  const stapleLines = useMemo(() => basket?.lines.filter((l) => l.assumedStaple && l.canonicalId) ?? [], [basket]);
+
+  // A staple she needs that no planned recipe uses still goes on the list, as a single item.
+  useEffect(() => {
+    if (!session || !basket || !data || !manual) return;
+    const prefix = `staple-${session.id}-`;
+    const inBasket = new Set(basket.lines.map((l) => l.canonicalId));
+    void (async () => {
+      for (const id of buy) {
+        const mid = prefix + id;
+        const exists = manual.some((m) => m.id === mid);
+        if (!inBasket.has(id) && !exists) {
+          const c = getCanonical(id);
+          const best = data.matches[id]?.[0];
+          const p = best ? data.products.get(best.productId) : null;
+          await db.manualItems.put({ id: mid, sessionId: session.id, name: c?.name ?? id, category: c?.category ?? 'other', estCents: p?.priceCents ?? null, checked: false, checkedAt: null });
+        } else if (inBasket.has(id) && exists) await db.manualItems.delete(mid);
+      }
+      for (const m of manual) if (m.id.startsWith(prefix) && !buy.has(m.id.slice(prefix.length))) await db.manualItems.delete(m.id);
+    })();
+  }, [buy, basket, session, data, manual]);
 
   const rows = useMemo(() => (basket && data && session ? buildRows(basket.lines, data.products, lineStates ?? [], session.id) : null), [basket, data, lineStates, session]);
   const totals = useMemo(() => (rows ? shopTotals(rows, manual ?? []) : null), [rows, manual]);
@@ -119,7 +143,7 @@ export function useShopping() {
     return [...cat.entries()].sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0])).map(([category, v]) => ({ category, ...v }));
   }, [rows, manual, household.categoryOrder]);
 
-  return { session, week, meals, extras, rows, totals, groups, manual: manual ?? [], basket, data, ctx, loading: !rows };
+  return { session, week, meals, extras, rows, totals, groups, manual: manual ?? [], basket, data, ctx, stapleLines, buyStaples: buy, loading: !rows };
 }
 
 export async function patchLine(sessionId: string, key: string, patch: Partial<ShopLineStateRow>) {
@@ -152,7 +176,8 @@ export function packLabel(p: Product | null, count: number, weightGrams: number 
 /** Complete the shop. Optionally moves what was bought into the pantry, kept separate from consumption. */
 export async function completeShop(sessionId: string, rows: ShopRow[], totalCents: number, addToPantry: boolean): Promise<number> {
   let added = 0;
-  await db.transaction('rw', db.sessions, db.pantry, db.pantryLog, async () => {
+  await db.transaction('rw', [db.sessions, db.pantry, db.pantryLog, db.settings], async () => {
+    await db.settings.delete('buyStaples');
     if (addToPantry) {
       for (const r of rows) {
         if (!r.checked || r.unavailable || !r.line.canonicalId) continue;

@@ -56,3 +56,32 @@ create policy "own shares delete" on public.family_shares for delete to authenti
 create policy "family reads loves" on public.family_loves for select to authenticated using (true);
 create policy "own loves insert" on public.family_loves for insert to authenticated with check (user_id = (select auth.uid()));
 create policy "own loves delete" on public.family_loves for delete to authenticated using (user_id = (select auth.uid()));
+
+-- Trusted contributors can add recipes to Love Bites for the whole family.
+-- Add someone in the SQL editor: insert into public.contributors (user_id) select id from auth.users where email = '...';
+create table if not exists public.contributors (
+  user_id uuid primary key references auth.users on delete cascade
+);
+
+create table if not exists public.community_recipes (
+  id text primary key check (id like 'community-%'),
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  recipe jsonb not null check (pg_column_size(recipe) < 300000),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.contributors enable row level security;
+alter table public.community_recipes enable row level security;
+grant select on public.contributors to authenticated;
+grant select, insert, update, delete on public.community_recipes to authenticated;
+revoke all on public.contributors, public.community_recipes from anon;
+
+create policy "family reads contributors" on public.contributors for select to authenticated using (true);
+create policy "family reads community recipes" on public.community_recipes for select to authenticated using (true);
+create policy "contributors add recipes" on public.community_recipes for insert to authenticated
+  with check (user_id = (select auth.uid()) and exists (select 1 from public.contributors c where c.user_id = (select auth.uid())));
+create policy "contributors update own recipes" on public.community_recipes for update to authenticated
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()) and exists (select 1 from public.contributors c where c.user_id = (select auth.uid())));
+create policy "contributors remove own recipes" on public.community_recipes for delete to authenticated using (user_id = (select auth.uid()));

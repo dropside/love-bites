@@ -2,6 +2,7 @@
 import { CANONICAL_INGREDIENTS } from '../domain/canonicalData';
 import type { CatalogManifest, MatchTable, Product, Recipe, RecipeSummary } from '../domain/types';
 import { db } from '../state/db';
+import { communityRecipe, refreshCommunity } from '../cloud/community';
 import { unpackProducts, type PackedProduct } from './productCodec';
 
 const base = import.meta.env.BASE_URL;
@@ -42,6 +43,10 @@ const loadChunk = (n: number) => {
 
 export async function getRecipe(id: string): Promise<Recipe | null> {
   if (id.startsWith('user-')) return (await db.userRecipes.get(id)) ?? null;
+  if (id.startsWith('community-')) {
+    if (!communityRecipe(id)) await refreshCommunity();
+    return communityRecipe(id);
+  }
   const entry = (await loadIndex()).find((r) => r.id === id);
   if (!entry) return null;
   return (await loadChunk(entry.c)).find((r) => r.id === id) ?? null;

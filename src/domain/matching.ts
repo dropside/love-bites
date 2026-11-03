@@ -21,10 +21,14 @@ export function scoreProduct(c: CanonicalIngredient, p: Product): number | null 
   const toks = tokens(p.name).map(singular);
   const set = new Set(toks);
   if (c.exclude?.some((x) => set.has(singular(x)))) return null;
-  const idx = c.query.findIndex((q) => hasAll(set, tokens(q)));
+  // The first search phrase the name satisfies without being a prepared food.
+  const idx = c.query.findIndex((q) => {
+    if (!hasAll(set, tokens(q))) return false;
+    const qt = tokens(q).map(singular);
+    return !toks.some((t) => PREPARED.has(t) && !qt.includes(t));
+  });
   if (idx < 0) return null;
   const queryToks = tokens(c.query[idx]).map(singular);
-  if (toks.some((t) => PREPARED.has(t) && !queryToks.includes(t))) return null;
   const queryLen = queryToks.length;
   // Fewer extra words = closer to the plain ingredient.
   const extras = toks.length - queryLen;

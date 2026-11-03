@@ -43,6 +43,8 @@ Sign-in, backup and family sharing use a free Supabase project (`love-bites`, or
 
 Sign-ups are switched off, so only people you add can get in. **To add someone:** Supabase dashboard > Authentication > Users > Add user > Create new user. Enter their email and a starting password, and leave *Auto confirm user* ticked. Send them the password privately. They can change it in Settings > Your account. To reset a forgotten password, use the same Users page.
 
+**Contributors** (currently Ren and Katie) can add their own imported or written recipes to Love Bites for everyone, using *Add to Love Bites* on the recipe page. These go in the `community_recipes` table and show in everyone's Discover. Only people in the `contributors` table can add them, and only the person who added a recipe can remove it. To make someone a contributor, run `insert into public.contributors (user_id) select id from auth.users where email = '...';` in the SQL editor.
+
 Each person's data is merged in when they sign in on a new phone, and backed up every 30 seconds while the app is open. If the same item is changed on two phones, both versions are kept rather than one overwriting the other. Free Supabase projects pause after a week with no activity. If that happens, restore the project from the dashboard; nothing is lost.
 
 Tests run with the cloud switched off (`VITE_CLOUD=off`), except `e2e/family.spec.ts`, which runs against a mock backend. Without the cloud, the app falls back to the kitchen code below.
