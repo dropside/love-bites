@@ -1,6 +1,6 @@
 # Love Bites data quality report
 
-Generated 2026-11-02T23:52:32.950Z. Every number below is counted from the catalogue files; nothing is estimated.
+Generated 2026-11-08T18:43:55.865Z. Every number below is counted from the catalogue files; nothing is estimated.
 
 ## Recipes
 - Total distinct: **2302** (from 2390 candidates, 88 duplicates removed)
@@ -20,10 +20,10 @@ Generated 2026-11-02T23:52:32.950Z. Every number below is counted from the catal
 
 ## Woolworths NZ
 - Source: neon-ninja/woolies public snapshot of Woolworths NZ online prices
-- Observed: 2026-11-01T17:03:02.000Z
+- Observed: 2026-11-08T17:03:00.000Z
 - Store context: Generic online pricing: the snapshot does not identify a specific store
-- Unique products: **11074**; valid prices: 11074; pack quantities: 10653; variable weight: 212
-- On special: 3863. Store-specific observations: 0
+- Unique products: **11086**; valid prices: 11086; pack quantities: 10665; variable weight: 214
+- On special: 4086. Store-specific observations: 0
 - Canonical ingredients matched: 196/199
 - Ingredient line match coverage: **96.1%** (14912/15516)
 - Used but unmatched: rocket, caraway
