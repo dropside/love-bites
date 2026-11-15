@@ -1,6 +1,6 @@
 # Love Bites data quality report
 
-Generated 2026-11-08T18:43:55.865Z. Every number below is counted from the catalogue files; nothing is estimated.
+Generated 2026-11-15T19:39:25.912Z. Every number below is counted from the catalogue files; nothing is estimated.
 
 ## Recipes
 - Total distinct: **2302** (from 2390 candidates, 88 duplicates removed)
@@ -9,7 +9,7 @@ Generated 2026-11-08T18:43:55.865Z. Every number below is counted from the catal
 - By rights: {"full-text":1634,"link-only":668}
 - Servings stated by source: 336; estimated: 1298
 - With usable instructions: 1634
-- Priced (at least 80% of ingredients priced): 1380
+- Priced (at least 80% of ingredients priced): 1378
 - Images: {"withLicensedImage":783,"withoutImage":1519}
 
 ### Thermomix
@@ -20,10 +20,10 @@ Generated 2026-11-08T18:43:55.865Z. Every number below is counted from the catal
 
 ## Woolworths NZ
 - Source: neon-ninja/woolies public snapshot of Woolworths NZ online prices
-- Observed: 2026-11-08T17:03:00.000Z
+- Observed: 2026-11-15T17:02:53.000Z
 - Store context: Generic online pricing: the snapshot does not identify a specific store
-- Unique products: **11086**; valid prices: 11086; pack quantities: 10665; variable weight: 214
-- On special: 4086. Store-specific observations: 0
+- Unique products: **11061**; valid prices: 11061; pack quantities: 10642; variable weight: 211
+- On special: 4087. Store-specific observations: 0
 - Canonical ingredients matched: 196/199
 - Ingredient line match coverage: **96.1%** (14912/15516)
 - Used but unmatched: rocket, caraway
