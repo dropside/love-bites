@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T19:39:25.912Z",
+  "generatedAt": "2026-11-22T20:37:50.341Z",
   "recipes": {
     "totalDistinct": 2302,
     "candidatesBeforeDedupe": 2390,
@@ -37,7 +37,7 @@
       "withLicensedImage": 783,
       "withoutImage": 1519
     },
-    "pricedRecipes": 1378,
+    "pricedRecipes": 1374,
     "distinctTitleKeys": 2302,
     "importStats": {
       "wbSkippedNonRecipe": 3,
@@ -48,33 +48,33 @@
   },
   "woolworths": {
     "source": "neon-ninja/woolies public snapshot of Woolworths NZ online prices",
-    "observedAt": "2026-11-15T17:02:53.000Z",
+    "observedAt": "2026-11-21T17:02:56.000Z",
     "storeContext": "Generic online pricing: the snapshot does not identify a specific store",
-    "uniqueProducts": 11061,
+    "uniqueProducts": 11072,
     "categories": {
-      "Pantry": 4818,
-      "Fridge & Deli": 1713,
-      "Beer & Wine": 1327,
-      "Drinks": 1209,
-      "Frozen": 682,
+      "Pantry": 4812,
+      "Fridge & Deli": 1723,
+      "Beer & Wine": 1326,
+      "Drinks": 1206,
+      "Frozen": 685,
       "Bakery": 441,
-      "Dinner": 327,
-      "Fruit & Veg": 315,
-      "Meat & Poultry": 205,
+      "Dinner": 329,
+      "Fruit & Veg": 318,
+      "Meat & Poultry": 208,
       "Fish & Seafood": 24
     },
-    "validPrices": 11061,
-    "withPackQuantity": 10642,
-    "variableWeight": 211,
-    "onSpecial": 4087,
+    "validPrices": 11072,
+    "withPackQuantity": 10204,
+    "variableWeight": 215,
+    "onSpecial": 4098,
     "storeSpecificObservations": 0,
     "rejects": {
-      "non-food department": 6342
+      "non-food department": 6328
     },
     "matching": {
       "canonicalIngredients": 199,
       "canonicalMatched": 196,
-      "productsInMatchTable": 1631,
+      "productsInMatchTable": 1630,
       "ingredientLinesInReliableRecipes": 15516,
       "ingredientLinesWithProductMatch": 14912,
       "lineMatchCoveragePct": 96.1,

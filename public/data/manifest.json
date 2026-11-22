@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-15T19:39:25.912Z",
+  "generatedAt": "2026-11-22T20:37:50.341Z",
   "recipeCount": 2302,
   "chunks": 24,
   "products": {
@@ -8,9 +8,9 @@
     "source": "neon-ninja/woolies public snapshot of Woolworths NZ online prices",
     "sourceUrl": "https://github.com/neon-ninja/woolies",
     "sourceLicense": "Repository MIT; prices are factual observations by a third party",
-    "observedAt": "2026-11-15T17:02:53.000Z",
-    "importedAt": "2026-11-15T19:39:22.786Z",
+    "observedAt": "2026-11-21T17:02:56.000Z",
+    "importedAt": "2026-11-22T20:37:46.492Z",
     "storeContext": "Generic online pricing: the snapshot does not identify a specific store",
-    "productCount": 11061
+    "productCount": 11072
   }
 }
